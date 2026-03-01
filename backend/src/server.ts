@@ -133,7 +133,7 @@ const users = new Map<string, UserContext>();
 ===================================================== */
 
 // Health check
-app.get("/health", (_, res) => {
+app.get("/status", (_, res) => {
   res.json({ status: "ok" });
 });
 
