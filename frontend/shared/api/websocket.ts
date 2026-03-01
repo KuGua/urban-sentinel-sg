@@ -1,4 +1,4 @@
-import { WsServerEvent, WsClientEvent } from "../schema";
+import { WsServerEvent, WsClientEvent } from "../../../schema";
 import { getWsBaseUrl } from "./config";
 
 export class WebSocketClient {

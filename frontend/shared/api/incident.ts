@@ -1,4 +1,4 @@
-import { Incident } from "../schema";
+import { Incident } from "../../../schema";
 import { getApiBaseUrl } from "./config";
 
 export const reportIncident = async (

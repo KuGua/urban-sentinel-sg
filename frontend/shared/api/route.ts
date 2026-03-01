@@ -1,4 +1,4 @@
-import { RoutePlan } from "../schema";
+import { RoutePlan } from "../../../schema";
 import { getApiBaseUrl } from "./config";
 
 export type BackendRouteRequest = {
