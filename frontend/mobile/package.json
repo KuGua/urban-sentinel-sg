@@ -9,6 +9,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "web:lan": "expo start --web --host lan --port 8090",
+    "web:tunnel": "expo start --web --host tunnel --port 8090",
     "lint": "expo lint"
   },
   "dependencies": {
