@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SafeFlow 连接测试</title>
+  <title>SafeFlow Connection Test</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -48,21 +48,21 @@
   </style>
 </head>
 <body>
-  <h1>SafeFlow 前后端连接测试</h1>
-  <div class="hint">默认后端地址是 <code>http://localhost:8080</code>，请先启动 backend。</div>
+  <h1>SafeFlow Frontend-Backend Connection Test</h1>
+  <div class="hint">The default backend address is <code>http://localhost:8080</code>. Start the backend first.</div>
 
   <div class="row">
     <input id="httpBase" value="http://localhost:8080" />
     <input id="wsBase" value="ws://localhost:8080" />
-    <button id="connectWs">连接 WS</button>
-    <button id="closeWs">断开 WS</button>
+    <button id="connectWs">Connect WS</button>
+    <button id="closeWs">Disconnect WS</button>
   </div>
 
   <div class="row">
-    <button id="testPerception">测试 /perception</button>
-    <button id="testIncident">测试 /incident</button>
-    <button id="testRoute">测试 /route</button>
-    <button id="clearLog">清空日志</button>
+    <button id="testPerception">Test /perception</button>
+    <button id="testIncident">Test /incident</button>
+    <button id="testRoute">Test /route</button>
+    <button id="clearLog">Clear Logs</button>
   </div>
 
   <div id="log"></div>
@@ -99,14 +99,14 @@
       const wsBase = $("wsBase").value.trim();
       if (ws) ws.close();
       ws = new WebSocket(wsBase);
-      ws.onopen = () => log("WS 已连接", { wsBase });
-      ws.onclose = () => log("WS 已断开");
-      ws.onerror = () => log("WS 错误");
+      ws.onopen = () => log("WS connected", { wsBase });
+      ws.onclose = () => log("WS disconnected");
+      ws.onerror = () => log("WS error");
       ws.onmessage = (event) => {
         try {
-          log("WS 收到消息", JSON.parse(event.data));
+          log("WS message received", JSON.parse(event.data));
         } catch {
-          log("WS 收到原始消息", event.data);
+          log("WS raw message received", event.data);
         }
       };
     };
@@ -125,12 +125,12 @@
           { zoneId: "AZ2", density: 0.78, anomaly: 0.25, conf: 0.88 }
         ]
       };
-      log("请求 /perception", payload);
+      log("Request /perception", payload);
       try {
         const result = await postJson("/perception", payload);
-        log("响应 /perception", result);
+        log("Response /perception", result);
       } catch (e) {
-        log("请求 /perception 失败", { error: String(e) });
+        log("Request /perception failed", { error: String(e) });
       }
     };
 
@@ -145,12 +145,12 @@
         routingImpact: { hazardPenalty: 0.2, affectedRoutingZoneIds: ["Z2"] },
         status: "open"
       };
-      log("请求 /incident", payload);
+      log("Request /incident", payload);
       try {
         const result = await postJson("/incident", payload);
-        log("响应 /incident", result);
+        log("Response /incident", result);
       } catch (e) {
-        log("请求 /incident 失败", { error: String(e) });
+        log("Request /incident failed", { error: String(e) });
       }
     };
 
@@ -160,12 +160,12 @@
         fromNodeId: "N1",
         toNodeId: "EXIT"
       };
-      log("请求 /route", payload);
+      log("Request /route", payload);
       try {
         const result = await postJson("/route", payload);
-        log("响应 /route", result);
+        log("Response /route", result);
       } catch (e) {
-        log("请求 /route 失败", { error: String(e) });
+        log("Request /route failed", { error: String(e) });
       }
     };
 
@@ -173,7 +173,7 @@
       logEl.textContent = "";
     };
 
-    log("测试页已加载");
+    log("Test page loaded");
   </script>
 </body>
 </html>
