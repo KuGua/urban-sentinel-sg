@@ -1,162 +1,6313 @@
 {
-  "mapId": "singapore_indoor_stadium_v2_seated",
-
+  "mapId": "singapore_indoor_stadium_v3_official_like",
+  "reference": {
+    "source": "User-provided seating plan + Google map entrance anchors",
+    "centerApproxLatLng": {
+      "lat": 1.30092,
+      "lng": 103.87418
+    },
+    "entrancesLatLng": [
+      {
+        "id": "EXIT_EAST",
+        "name": "East Entrance",
+        "lat": 1.3008763,
+        "lng": 103.8743493
+      },
+      {
+        "id": "EXIT_NORTH",
+        "name": "North Entrance",
+        "lat": 1.3009591,
+        "lng": 103.8742077
+      },
+      {
+        "id": "EXIT_PREMIER_WEST",
+        "name": "Premier West",
+        "lat": 1.3006747,
+        "lng": 103.8738224
+      },
+      {
+        "id": "EXIT_PREMIER_ENTRANCE",
+        "name": "Premier Entrance",
+        "lat": 1.3003651,
+        "lng": 103.8741285
+      }
+    ],
+    "note": "Internal graph coordinates are local XY for routing simulation (not raw lat/lng)."
+  },
   "analysisZones": [
-    { "id": "AZ_ARENA_FLOOR", "name": "Arena Floor", "polygon": [] },
-    { "id": "AZ_LOWER_BOWL", "name": "Lower Bowl", "polygon": [] },
-    { "id": "AZ_UPPER_BOWL", "name": "Upper Bowl", "polygon": [] },
-    { "id": "AZ_CONCOURSE_N", "name": "North Concourse", "polygon": [] },
-    { "id": "AZ_CONCOURSE_S", "name": "South Concourse", "polygon": [] },
-    { "id": "AZ_EAST_PLAZA", "name": "East Plaza", "polygon": [] },
-    { "id": "AZ_WEST_PLAZA", "name": "West Plaza", "polygon": [] }
+    {
+      "id": "AZ_FLOOR",
+      "name": "Arena Floor",
+      "polygon": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 15.9,
+          "y": -25.44
+        },
+        {
+          "x": 15.9,
+          "y": -25.44
+        },
+        {
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "AZ_BOWL_100",
+      "name": "100 Level Bowl",
+      "polygon": [
+        {
+          "x": 20.07,
+          "y": -22.29
+        },
+        {
+          "x": 34.79,
+          "y": -38.64
+        },
+        {
+          "x": 34.79,
+          "y": -38.64
+        },
+        {
+          "x": 20.07,
+          "y": -22.29
+        }
+      ]
+    },
+    {
+      "id": "AZ_BOWL_200",
+      "name": "200 Level Bowl",
+      "polygon": [
+        {
+          "x": 34.79,
+          "y": -38.64
+        },
+        {
+          "x": 50.85,
+          "y": -56.48
+        },
+        {
+          "x": 50.85,
+          "y": -56.48
+        },
+        {
+          "x": 34.79,
+          "y": -38.64
+        }
+      ]
+    },
+    {
+      "id": "AZ_BOWL_300",
+      "name": "300 Level Bowl",
+      "polygon": [
+        {
+          "x": 50.85,
+          "y": -56.48
+        },
+        {
+          "x": 68.25,
+          "y": -75.8
+        },
+        {
+          "x": 68.25,
+          "y": -75.8
+        },
+        {
+          "x": 50.85,
+          "y": -56.48
+        }
+      ]
+    },
+    {
+      "id": "AZ_CONCOURSE",
+      "name": "Concourse Walks",
+      "polygon": [
+        {
+          "x": 48.18,
+          "y": -53.51
+        },
+        {
+          "x": 64.24,
+          "y": -71.34
+        },
+        {
+          "x": 64.24,
+          "y": -71.34
+        },
+        {
+          "x": 48.18,
+          "y": -53.51
+        }
+      ]
+    },
+    {
+      "id": "AZ_EXTERNAL",
+      "name": "External Entrances",
+      "polygon": [
+        {
+          "x": 68.25,
+          "y": -75.8
+        },
+        {
+          "x": 113.75,
+          "y": -126.33
+        },
+        {
+          "x": 113.75,
+          "y": -126.33
+        },
+        {
+          "x": 68.25,
+          "y": -75.8
+        }
+      ]
+    }
   ],
-
   "routingZones": [
-    { "id": "Z_ARENA_CENTER", "name": "Main Arena Floor", "parentAnalysisZoneId": "AZ_ARENA_FLOOR", "capacity": 2000, "polygon": [] },
-
-    { "id": "Z_LS_01", "name": "Lower Seats 01", "parentAnalysisZoneId": "AZ_LOWER_BOWL", "capacity": 520, "polygon": [] },
-    { "id": "Z_LS_02", "name": "Lower Seats 02", "parentAnalysisZoneId": "AZ_LOWER_BOWL", "capacity": 520, "polygon": [] },
-    { "id": "Z_LS_03", "name": "Lower Seats 03", "parentAnalysisZoneId": "AZ_LOWER_BOWL", "capacity": 520, "polygon": [] },
-    { "id": "Z_LS_04", "name": "Lower Seats 04", "parentAnalysisZoneId": "AZ_LOWER_BOWL", "capacity": 520, "polygon": [] },
-    { "id": "Z_LS_05", "name": "Lower Seats 05", "parentAnalysisZoneId": "AZ_LOWER_BOWL", "capacity": 520, "polygon": [] },
-    { "id": "Z_LS_06", "name": "Lower Seats 06", "parentAnalysisZoneId": "AZ_LOWER_BOWL", "capacity": 520, "polygon": [] },
-    { "id": "Z_LS_07", "name": "Lower Seats 07", "parentAnalysisZoneId": "AZ_LOWER_BOWL", "capacity": 520, "polygon": [] },
-    { "id": "Z_LS_08", "name": "Lower Seats 08", "parentAnalysisZoneId": "AZ_LOWER_BOWL", "capacity": 520, "polygon": [] },
-
-    { "id": "Z_US_01", "name": "Upper Seats 01", "parentAnalysisZoneId": "AZ_UPPER_BOWL", "capacity": 610, "polygon": [] },
-    { "id": "Z_US_02", "name": "Upper Seats 02", "parentAnalysisZoneId": "AZ_UPPER_BOWL", "capacity": 610, "polygon": [] },
-    { "id": "Z_US_03", "name": "Upper Seats 03", "parentAnalysisZoneId": "AZ_UPPER_BOWL", "capacity": 610, "polygon": [] },
-    { "id": "Z_US_04", "name": "Upper Seats 04", "parentAnalysisZoneId": "AZ_UPPER_BOWL", "capacity": 610, "polygon": [] },
-    { "id": "Z_US_05", "name": "Upper Seats 05", "parentAnalysisZoneId": "AZ_UPPER_BOWL", "capacity": 610, "polygon": [] },
-    { "id": "Z_US_06", "name": "Upper Seats 06", "parentAnalysisZoneId": "AZ_UPPER_BOWL", "capacity": 610, "polygon": [] },
-    { "id": "Z_US_07", "name": "Upper Seats 07", "parentAnalysisZoneId": "AZ_UPPER_BOWL", "capacity": 610, "polygon": [] },
-    { "id": "Z_US_08", "name": "Upper Seats 08", "parentAnalysisZoneId": "AZ_UPPER_BOWL", "capacity": 610, "polygon": [] },
-
-    { "id": "Z_CON_N", "name": "North Concourse", "parentAnalysisZoneId": "AZ_CONCOURSE_N", "capacity": 1400, "polygon": [] },
-    { "id": "Z_CON_E", "name": "East Concourse", "parentAnalysisZoneId": "AZ_CONCOURSE_N", "capacity": 1100, "polygon": [] },
-    { "id": "Z_CON_S", "name": "South Concourse", "parentAnalysisZoneId": "AZ_CONCOURSE_S", "capacity": 1400, "polygon": [] },
-    { "id": "Z_CON_W", "name": "West Concourse", "parentAnalysisZoneId": "AZ_CONCOURSE_S", "capacity": 1100, "polygon": [] },
-
-    { "id": "Z_STAIR_N", "name": "North Stair Core", "parentAnalysisZoneId": "AZ_CONCOURSE_N", "capacity": 450, "polygon": [] },
-    { "id": "Z_STAIR_E", "name": "East Stair Core", "parentAnalysisZoneId": "AZ_EAST_PLAZA", "capacity": 450, "polygon": [] },
-    { "id": "Z_STAIR_S", "name": "South Stair Core", "parentAnalysisZoneId": "AZ_CONCOURSE_S", "capacity": 450, "polygon": [] },
-    { "id": "Z_STAIR_W", "name": "West Stair Core", "parentAnalysisZoneId": "AZ_WEST_PLAZA", "capacity": 450, "polygon": [] },
-
-    { "id": "Z_PLAZA_E", "name": "East Plaza", "parentAnalysisZoneId": "AZ_EAST_PLAZA", "capacity": 1000, "polygon": [] },
-    { "id": "Z_PLAZA_W", "name": "West Plaza", "parentAnalysisZoneId": "AZ_WEST_PLAZA", "capacity": 1000, "polygon": [] },
-
-    { "id": "Z_EXIT_E", "name": "East Exit", "parentAnalysisZoneId": "AZ_EAST_PLAZA", "capacity": 700, "polygon": [] },
-    { "id": "Z_EXIT_W", "name": "West Exit", "parentAnalysisZoneId": "AZ_WEST_PLAZA", "capacity": 700, "polygon": [] },
-    { "id": "Z_EXIT_N", "name": "North Exit", "parentAnalysisZoneId": "AZ_CONCOURSE_N", "capacity": 550, "polygon": [] },
-    { "id": "Z_EXIT_S", "name": "South Exit", "parentAnalysisZoneId": "AZ_CONCOURSE_S", "capacity": 550, "polygon": [] }
+    {
+      "id": "Z_FLOOR_A",
+      "name": "Floor Block A",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 280,
+      "polygon": [
+        {
+          "x": -7.93,
+          "y": 4.25
+        },
+        {
+          "x": -25.56,
+          "y": 13.7
+        },
+        {
+          "x": -10.96,
+          "y": 26.85
+        },
+        {
+          "x": -3.4,
+          "y": 8.33
+        }
+      ]
+    },
+    {
+      "id": "Z_FLOOR_B",
+      "name": "Floor Block B",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 280,
+      "polygon": [
+        {
+          "x": -2.6,
+          "y": 8.62
+        },
+        {
+          "x": -8.38,
+          "y": 27.76
+        },
+        {
+          "x": 11.24,
+          "y": 26.73
+        },
+        {
+          "x": 3.49,
+          "y": 8.3
+        }
+      ]
+    },
+    {
+      "id": "Z_FLOOR_C",
+      "name": "Floor Block C",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 280,
+      "polygon": [
+        {
+          "x": 4.25,
+          "y": 7.93
+        },
+        {
+          "x": 13.7,
+          "y": 25.56
+        },
+        {
+          "x": 26.85,
+          "y": 10.96
+        },
+        {
+          "x": 8.33,
+          "y": 3.4
+        }
+      ]
+    },
+    {
+      "id": "Z_FLOOR_D",
+      "name": "Floor Block D",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 280,
+      "polygon": [
+        {
+          "x": 8.62,
+          "y": 2.6
+        },
+        {
+          "x": 27.76,
+          "y": 8.38
+        },
+        {
+          "x": 26.73,
+          "y": -11.24
+        },
+        {
+          "x": 8.3,
+          "y": -3.49
+        }
+      ]
+    },
+    {
+      "id": "Z_FLOOR_E",
+      "name": "Floor Block E",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 280,
+      "polygon": [
+        {
+          "x": 7.93,
+          "y": -4.25
+        },
+        {
+          "x": 25.56,
+          "y": -13.7
+        },
+        {
+          "x": 10.96,
+          "y": -26.85
+        },
+        {
+          "x": 3.4,
+          "y": -8.33
+        }
+      ]
+    },
+    {
+      "id": "Z_FLOOR_F",
+      "name": "Floor Block F",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 280,
+      "polygon": [
+        {
+          "x": 2.6,
+          "y": -8.62
+        },
+        {
+          "x": 8.38,
+          "y": -27.76
+        },
+        {
+          "x": -11.24,
+          "y": -26.73
+        },
+        {
+          "x": -3.49,
+          "y": -8.3
+        }
+      ]
+    },
+    {
+      "id": "Z_FLOOR_G",
+      "name": "Floor Block G",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 280,
+      "polygon": [
+        {
+          "x": -4.25,
+          "y": -7.93
+        },
+        {
+          "x": -13.7,
+          "y": -25.56
+        },
+        {
+          "x": -26.85,
+          "y": -10.96
+        },
+        {
+          "x": -8.33,
+          "y": -3.4
+        }
+      ]
+    },
+    {
+      "id": "Z_FLOOR_H",
+      "name": "Floor Block H",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 280,
+      "polygon": [
+        {
+          "x": -8.62,
+          "y": -2.6
+        },
+        {
+          "x": -27.76,
+          "y": -8.38
+        },
+        {
+          "x": -26.73,
+          "y": 11.24
+        },
+        {
+          "x": -8.3,
+          "y": 3.49
+        }
+      ]
+    },
+    {
+      "id": "Z_FLOOR_CORE",
+      "name": "Octagon / Stage Core",
+      "parentAnalysisZoneId": "AZ_FLOOR",
+      "capacity": 120,
+      "polygon": [
+        {
+          "x": -7,
+          "y": -7
+        },
+        {
+          "x": 7,
+          "y": -7
+        },
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": -7,
+          "y": 7
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_01",
+      "name": "Section 101",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -21.63,
+          "y": 20.79
+        },
+        {
+          "x": -36.05,
+          "y": 34.64
+        },
+        {
+          "x": -30.69,
+          "y": 39.48
+        },
+        {
+          "x": -18.41,
+          "y": 23.69
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_01",
+      "name": "Section 201",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -37.49,
+          "y": 36.03
+        },
+        {
+          "x": -53.36,
+          "y": 51.27
+        },
+        {
+          "x": -45.42,
+          "y": 58.42
+        },
+        {
+          "x": -31.91,
+          "y": 41.05
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_01",
+      "name": "Section 301",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -54.8,
+          "y": 52.66
+        },
+        {
+          "x": -70.66,
+          "y": 67.9
+        },
+        {
+          "x": -60.15,
+          "y": 77.37
+        },
+        {
+          "x": -46.64,
+          "y": 60
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_02",
+      "name": "Section 102",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -18.11,
+          "y": 23.91
+        },
+        {
+          "x": -30.19,
+          "y": 39.86
+        },
+        {
+          "x": -24.13,
+          "y": 43.79
+        },
+        {
+          "x": -14.48,
+          "y": 26.27
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_02",
+      "name": "Section 202",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -31.4,
+          "y": 41.45
+        },
+        {
+          "x": -44.68,
+          "y": 58.99
+        },
+        {
+          "x": -35.72,
+          "y": 64.81
+        },
+        {
+          "x": -25.1,
+          "y": 45.54
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_02",
+      "name": "Section 302",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -45.89,
+          "y": 60.58
+        },
+        {
+          "x": -59.17,
+          "y": 78.12
+        },
+        {
+          "x": -47.3,
+          "y": 85.83
+        },
+        {
+          "x": -36.68,
+          "y": 66.56
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_03",
+      "name": "Section 103",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -14.15,
+          "y": 26.45
+        },
+        {
+          "x": -23.58,
+          "y": 44.09
+        },
+        {
+          "x": -16.99,
+          "y": 47.03
+        },
+        {
+          "x": -10.19,
+          "y": 28.22
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_03",
+      "name": "Section 203",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -24.52,
+          "y": 45.85
+        },
+        {
+          "x": -34.9,
+          "y": 65.25
+        },
+        {
+          "x": -25.14,
+          "y": 69.6
+        },
+        {
+          "x": -17.67,
+          "y": 48.91
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_03",
+      "name": "Section 303",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -35.84,
+          "y": 67.02
+        },
+        {
+          "x": -46.22,
+          "y": 86.42
+        },
+        {
+          "x": -33.29,
+          "y": 92.17
+        },
+        {
+          "x": -25.82,
+          "y": 71.48
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_04",
+      "name": "Section 104",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -9.84,
+          "y": 28.34
+        },
+        {
+          "x": -16.39,
+          "y": 47.24
+        },
+        {
+          "x": -9.42,
+          "y": 49.1
+        },
+        {
+          "x": -5.65,
+          "y": 29.46
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_04",
+      "name": "Section 204",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -17.05,
+          "y": 49.13
+        },
+        {
+          "x": -24.26,
+          "y": 69.91
+        },
+        {
+          "x": -13.94,
+          "y": 72.67
+        },
+        {
+          "x": -9.8,
+          "y": 51.07
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_04",
+      "name": "Section 304",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -24.92,
+          "y": 71.8
+        },
+        {
+          "x": -32.13,
+          "y": 92.58
+        },
+        {
+          "x": -18.46,
+          "y": 96.24
+        },
+        {
+          "x": -14.32,
+          "y": 74.64
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_05",
+      "name": "Section 105",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -5.28,
+          "y": 29.53
+        },
+        {
+          "x": -8.8,
+          "y": 49.22
+        },
+        {
+          "x": -1.62,
+          "y": 49.97
+        },
+        {
+          "x": -0.97,
+          "y": 29.98
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_05",
+      "name": "Section 205",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -9.15,
+          "y": 51.19
+        },
+        {
+          "x": -13.03,
+          "y": 72.84
+        },
+        {
+          "x": -2.4,
+          "y": 73.96
+        },
+        {
+          "x": -1.69,
+          "y": 51.97
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_05",
+      "name": "Section 305",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -13.38,
+          "y": 74.81
+        },
+        {
+          "x": -17.25,
+          "y": 96.47
+        },
+        {
+          "x": -3.18,
+          "y": 97.95
+        },
+        {
+          "x": -2.47,
+          "y": 75.96
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_06",
+      "name": "Section 106",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -0.6,
+          "y": 29.99
+        },
+        {
+          "x": -0.99,
+          "y": 49.99
+        },
+        {
+          "x": 6.21,
+          "y": 49.61
+        },
+        {
+          "x": 3.73,
+          "y": 29.77
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_06",
+      "name": "Section 206",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -1.03,
+          "y": 51.99
+        },
+        {
+          "x": -1.47,
+          "y": 73.99
+        },
+        {
+          "x": 9.2,
+          "y": 73.43
+        },
+        {
+          "x": 6.46,
+          "y": 51.6
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_06",
+      "name": "Section 306",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -1.51,
+          "y": 75.98
+        },
+        {
+          "x": -1.95,
+          "y": 97.98
+        },
+        {
+          "x": 12.18,
+          "y": 97.24
+        },
+        {
+          "x": 9.45,
+          "y": 75.41
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_07",
+      "name": "Section 107",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 4.1,
+          "y": 29.72
+        },
+        {
+          "x": 6.84,
+          "y": 49.53
+        },
+        {
+          "x": 13.9,
+          "y": 48.03
+        },
+        {
+          "x": 8.34,
+          "y": 28.82
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_07",
+      "name": "Section 207",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 7.11,
+          "y": 51.51
+        },
+        {
+          "x": 10.12,
+          "y": 73.3
+        },
+        {
+          "x": 20.57,
+          "y": 71.08
+        },
+        {
+          "x": 14.46,
+          "y": 49.95
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_07",
+      "name": "Section 307",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 10.39,
+          "y": 75.29
+        },
+        {
+          "x": 13.4,
+          "y": 97.08
+        },
+        {
+          "x": 27.24,
+          "y": 94.14
+        },
+        {
+          "x": 21.13,
+          "y": 73
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_08",
+      "name": "Section 108",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 8.7,
+          "y": 28.71
+        },
+        {
+          "x": 14.5,
+          "y": 47.85
+        },
+        {
+          "x": 21.24,
+          "y": 45.26
+        },
+        {
+          "x": 12.74,
+          "y": 27.16
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_08",
+      "name": "Section 208",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 15.08,
+          "y": 49.76
+        },
+        {
+          "x": 21.46,
+          "y": 70.82
+        },
+        {
+          "x": 31.44,
+          "y": 66.99
+        },
+        {
+          "x": 22.09,
+          "y": 47.07
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_08",
+      "name": "Section 308",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 22.04,
+          "y": 72.73
+        },
+        {
+          "x": 28.42,
+          "y": 93.79
+        },
+        {
+          "x": 41.63,
+          "y": 88.72
+        },
+        {
+          "x": 32.29,
+          "y": 68.8
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_09",
+      "name": "Section 109",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 13.09,
+          "y": 27
+        },
+        {
+          "x": 21.81,
+          "y": 44.99
+        },
+        {
+          "x": 28.06,
+          "y": 41.38
+        },
+        {
+          "x": 16.84,
+          "y": 24.83
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_09",
+      "name": "Section 209",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 22.68,
+          "y": 46.79
+        },
+        {
+          "x": 32.28,
+          "y": 66.59
+        },
+        {
+          "x": 41.53,
+          "y": 61.25
+        },
+        {
+          "x": 29.18,
+          "y": 43.04
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_09",
+      "name": "Section 309",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 33.15,
+          "y": 68.39
+        },
+        {
+          "x": 42.75,
+          "y": 88.19
+        },
+        {
+          "x": 55,
+          "y": 81.11
+        },
+        {
+          "x": 42.65,
+          "y": 62.9
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_10",
+      "name": "Section 110",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 17.15,
+          "y": 24.62
+        },
+        {
+          "x": 28.58,
+          "y": 41.03
+        },
+        {
+          "x": 34.19,
+          "y": 36.48
+        },
+        {
+          "x": 20.51,
+          "y": 21.89
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_10",
+      "name": "Section 210",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 29.72,
+          "y": 42.67
+        },
+        {
+          "x": 42.3,
+          "y": 60.72
+        },
+        {
+          "x": 50.6,
+          "y": 54
+        },
+        {
+          "x": 35.56,
+          "y": 37.94
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_10",
+      "name": "Section 310",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 43.44,
+          "y": 62.36
+        },
+        {
+          "x": 56.01,
+          "y": 80.41
+        },
+        {
+          "x": 67.01,
+          "y": 71.51
+        },
+        {
+          "x": 51.97,
+          "y": 55.46
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_11",
+      "name": "Section 111",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 20.79,
+          "y": 21.63
+        },
+        {
+          "x": 34.64,
+          "y": 36.05
+        },
+        {
+          "x": 39.48,
+          "y": 30.69
+        },
+        {
+          "x": 23.69,
+          "y": 18.41
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_11",
+      "name": "Section 211",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 36.03,
+          "y": 37.49
+        },
+        {
+          "x": 51.27,
+          "y": 53.36
+        },
+        {
+          "x": 58.42,
+          "y": 45.42
+        },
+        {
+          "x": 41.05,
+          "y": 31.91
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_11",
+      "name": "Section 311",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 52.66,
+          "y": 54.8
+        },
+        {
+          "x": 67.9,
+          "y": 70.66
+        },
+        {
+          "x": 77.37,
+          "y": 60.15
+        },
+        {
+          "x": 60,
+          "y": 46.64
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_12",
+      "name": "Section 112",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 23.91,
+          "y": 18.11
+        },
+        {
+          "x": 39.86,
+          "y": 30.19
+        },
+        {
+          "x": 43.79,
+          "y": 24.13
+        },
+        {
+          "x": 26.27,
+          "y": 14.48
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_12",
+      "name": "Section 212",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 41.45,
+          "y": 31.4
+        },
+        {
+          "x": 58.99,
+          "y": 44.68
+        },
+        {
+          "x": 64.81,
+          "y": 35.72
+        },
+        {
+          "x": 45.54,
+          "y": 25.1
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_12",
+      "name": "Section 312",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 60.58,
+          "y": 45.89
+        },
+        {
+          "x": 78.12,
+          "y": 59.17
+        },
+        {
+          "x": 85.83,
+          "y": 47.3
+        },
+        {
+          "x": 66.56,
+          "y": 36.68
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_13",
+      "name": "Section 113",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 26.45,
+          "y": 14.15
+        },
+        {
+          "x": 44.09,
+          "y": 23.58
+        },
+        {
+          "x": 47.03,
+          "y": 16.99
+        },
+        {
+          "x": 28.22,
+          "y": 10.19
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_13",
+      "name": "Section 213",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 45.85,
+          "y": 24.52
+        },
+        {
+          "x": 65.25,
+          "y": 34.9
+        },
+        {
+          "x": 69.6,
+          "y": 25.14
+        },
+        {
+          "x": 48.91,
+          "y": 17.67
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_13",
+      "name": "Section 313",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 67.02,
+          "y": 35.84
+        },
+        {
+          "x": 86.42,
+          "y": 46.22
+        },
+        {
+          "x": 92.17,
+          "y": 33.29
+        },
+        {
+          "x": 71.48,
+          "y": 25.82
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_14",
+      "name": "Section 114",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 28.34,
+          "y": 9.84
+        },
+        {
+          "x": 47.24,
+          "y": 16.39
+        },
+        {
+          "x": 49.1,
+          "y": 9.42
+        },
+        {
+          "x": 29.46,
+          "y": 5.65
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_14",
+      "name": "Section 214",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 49.13,
+          "y": 17.05
+        },
+        {
+          "x": 69.91,
+          "y": 24.26
+        },
+        {
+          "x": 72.67,
+          "y": 13.94
+        },
+        {
+          "x": 51.07,
+          "y": 9.8
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_14",
+      "name": "Section 314",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 71.8,
+          "y": 24.92
+        },
+        {
+          "x": 92.58,
+          "y": 32.13
+        },
+        {
+          "x": 96.24,
+          "y": 18.46
+        },
+        {
+          "x": 74.64,
+          "y": 14.32
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_15",
+      "name": "Section 115",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 29.53,
+          "y": 5.28
+        },
+        {
+          "x": 49.22,
+          "y": 8.8
+        },
+        {
+          "x": 49.97,
+          "y": 1.62
+        },
+        {
+          "x": 29.98,
+          "y": 0.97
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_15",
+      "name": "Section 215",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 51.19,
+          "y": 9.15
+        },
+        {
+          "x": 72.84,
+          "y": 13.03
+        },
+        {
+          "x": 73.96,
+          "y": 2.4
+        },
+        {
+          "x": 51.97,
+          "y": 1.69
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_15",
+      "name": "Section 315",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 74.81,
+          "y": 13.38
+        },
+        {
+          "x": 96.47,
+          "y": 17.25
+        },
+        {
+          "x": 97.95,
+          "y": 3.18
+        },
+        {
+          "x": 75.96,
+          "y": 2.47
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_16",
+      "name": "Section 116",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 29.99,
+          "y": 0.6
+        },
+        {
+          "x": 49.99,
+          "y": 0.99
+        },
+        {
+          "x": 49.61,
+          "y": -6.21
+        },
+        {
+          "x": 29.77,
+          "y": -3.73
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_16",
+      "name": "Section 216",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 51.99,
+          "y": 1.03
+        },
+        {
+          "x": 73.99,
+          "y": 1.47
+        },
+        {
+          "x": 73.43,
+          "y": -9.2
+        },
+        {
+          "x": 51.6,
+          "y": -6.46
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_16",
+      "name": "Section 316",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 75.98,
+          "y": 1.51
+        },
+        {
+          "x": 97.98,
+          "y": 1.95
+        },
+        {
+          "x": 97.24,
+          "y": -12.18
+        },
+        {
+          "x": 75.41,
+          "y": -9.45
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_17",
+      "name": "Section 117",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 29.72,
+          "y": -4.1
+        },
+        {
+          "x": 49.53,
+          "y": -6.84
+        },
+        {
+          "x": 48.03,
+          "y": -13.9
+        },
+        {
+          "x": 28.82,
+          "y": -8.34
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_17",
+      "name": "Section 217",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 51.51,
+          "y": -7.11
+        },
+        {
+          "x": 73.3,
+          "y": -10.12
+        },
+        {
+          "x": 71.08,
+          "y": -20.57
+        },
+        {
+          "x": 49.95,
+          "y": -14.46
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_17",
+      "name": "Section 317",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 75.29,
+          "y": -10.39
+        },
+        {
+          "x": 97.08,
+          "y": -13.4
+        },
+        {
+          "x": 94.14,
+          "y": -27.24
+        },
+        {
+          "x": 73,
+          "y": -21.13
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_18",
+      "name": "Section 118",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 28.71,
+          "y": -8.7
+        },
+        {
+          "x": 47.85,
+          "y": -14.5
+        },
+        {
+          "x": 45.26,
+          "y": -21.24
+        },
+        {
+          "x": 27.16,
+          "y": -12.74
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_18",
+      "name": "Section 218",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 49.76,
+          "y": -15.08
+        },
+        {
+          "x": 70.82,
+          "y": -21.46
+        },
+        {
+          "x": 66.99,
+          "y": -31.44
+        },
+        {
+          "x": 47.07,
+          "y": -22.09
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_18",
+      "name": "Section 318",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 72.73,
+          "y": -22.04
+        },
+        {
+          "x": 93.79,
+          "y": -28.42
+        },
+        {
+          "x": 88.72,
+          "y": -41.63
+        },
+        {
+          "x": 68.8,
+          "y": -32.29
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_19",
+      "name": "Section 119",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 27,
+          "y": -13.09
+        },
+        {
+          "x": 44.99,
+          "y": -21.81
+        },
+        {
+          "x": 41.38,
+          "y": -28.06
+        },
+        {
+          "x": 24.83,
+          "y": -16.84
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_19",
+      "name": "Section 219",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 46.79,
+          "y": -22.68
+        },
+        {
+          "x": 66.59,
+          "y": -32.28
+        },
+        {
+          "x": 61.25,
+          "y": -41.53
+        },
+        {
+          "x": 43.04,
+          "y": -29.18
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_19",
+      "name": "Section 319",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 68.39,
+          "y": -33.15
+        },
+        {
+          "x": 88.19,
+          "y": -42.75
+        },
+        {
+          "x": 81.11,
+          "y": -55
+        },
+        {
+          "x": 62.9,
+          "y": -42.65
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_20",
+      "name": "Section 120",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 24.62,
+          "y": -17.15
+        },
+        {
+          "x": 41.03,
+          "y": -28.58
+        },
+        {
+          "x": 36.48,
+          "y": -34.19
+        },
+        {
+          "x": 21.89,
+          "y": -20.51
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_20",
+      "name": "Section 220",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 42.67,
+          "y": -29.72
+        },
+        {
+          "x": 60.72,
+          "y": -42.3
+        },
+        {
+          "x": 54,
+          "y": -50.6
+        },
+        {
+          "x": 37.94,
+          "y": -35.56
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_20",
+      "name": "Section 320",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 62.36,
+          "y": -43.44
+        },
+        {
+          "x": 80.41,
+          "y": -56.01
+        },
+        {
+          "x": 71.51,
+          "y": -67.01
+        },
+        {
+          "x": 55.46,
+          "y": -51.97
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_21",
+      "name": "Section 121",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 21.63,
+          "y": -20.79
+        },
+        {
+          "x": 36.05,
+          "y": -34.64
+        },
+        {
+          "x": 30.69,
+          "y": -39.48
+        },
+        {
+          "x": 18.41,
+          "y": -23.69
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_21",
+      "name": "Section 221",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 37.49,
+          "y": -36.03
+        },
+        {
+          "x": 53.36,
+          "y": -51.27
+        },
+        {
+          "x": 45.42,
+          "y": -58.42
+        },
+        {
+          "x": 31.91,
+          "y": -41.05
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_21",
+      "name": "Section 321",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 54.8,
+          "y": -52.66
+        },
+        {
+          "x": 70.66,
+          "y": -67.9
+        },
+        {
+          "x": 60.15,
+          "y": -77.37
+        },
+        {
+          "x": 46.64,
+          "y": -60
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_22",
+      "name": "Section 122",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 18.11,
+          "y": -23.91
+        },
+        {
+          "x": 30.19,
+          "y": -39.86
+        },
+        {
+          "x": 24.13,
+          "y": -43.79
+        },
+        {
+          "x": 14.48,
+          "y": -26.27
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_22",
+      "name": "Section 222",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 31.4,
+          "y": -41.45
+        },
+        {
+          "x": 44.68,
+          "y": -58.99
+        },
+        {
+          "x": 35.72,
+          "y": -64.81
+        },
+        {
+          "x": 25.1,
+          "y": -45.54
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_22",
+      "name": "Section 322",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 45.89,
+          "y": -60.58
+        },
+        {
+          "x": 59.17,
+          "y": -78.12
+        },
+        {
+          "x": 47.3,
+          "y": -85.83
+        },
+        {
+          "x": 36.68,
+          "y": -66.56
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_23",
+      "name": "Section 123",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 14.15,
+          "y": -26.45
+        },
+        {
+          "x": 23.58,
+          "y": -44.09
+        },
+        {
+          "x": 16.99,
+          "y": -47.03
+        },
+        {
+          "x": 10.19,
+          "y": -28.22
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_23",
+      "name": "Section 223",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 24.52,
+          "y": -45.85
+        },
+        {
+          "x": 34.9,
+          "y": -65.25
+        },
+        {
+          "x": 25.14,
+          "y": -69.6
+        },
+        {
+          "x": 17.67,
+          "y": -48.91
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_23",
+      "name": "Section 323",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 35.84,
+          "y": -67.02
+        },
+        {
+          "x": 46.22,
+          "y": -86.42
+        },
+        {
+          "x": 33.29,
+          "y": -92.17
+        },
+        {
+          "x": 25.82,
+          "y": -71.48
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_24",
+      "name": "Section 124",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 9.84,
+          "y": -28.34
+        },
+        {
+          "x": 16.39,
+          "y": -47.24
+        },
+        {
+          "x": 9.42,
+          "y": -49.1
+        },
+        {
+          "x": 5.65,
+          "y": -29.46
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_24",
+      "name": "Section 224",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 17.05,
+          "y": -49.13
+        },
+        {
+          "x": 24.26,
+          "y": -69.91
+        },
+        {
+          "x": 13.94,
+          "y": -72.67
+        },
+        {
+          "x": 9.8,
+          "y": -51.07
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_24",
+      "name": "Section 324",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 24.92,
+          "y": -71.8
+        },
+        {
+          "x": 32.13,
+          "y": -92.58
+        },
+        {
+          "x": 18.46,
+          "y": -96.24
+        },
+        {
+          "x": 14.32,
+          "y": -74.64
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_25",
+      "name": "Section 125",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 5.28,
+          "y": -29.53
+        },
+        {
+          "x": 8.8,
+          "y": -49.22
+        },
+        {
+          "x": 1.62,
+          "y": -49.97
+        },
+        {
+          "x": 0.97,
+          "y": -29.98
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_25",
+      "name": "Section 225",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 9.15,
+          "y": -51.19
+        },
+        {
+          "x": 13.03,
+          "y": -72.84
+        },
+        {
+          "x": 2.4,
+          "y": -73.96
+        },
+        {
+          "x": 1.69,
+          "y": -51.97
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_25",
+      "name": "Section 325",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 13.38,
+          "y": -74.81
+        },
+        {
+          "x": 17.25,
+          "y": -96.47
+        },
+        {
+          "x": 3.18,
+          "y": -97.95
+        },
+        {
+          "x": 2.47,
+          "y": -75.96
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_26",
+      "name": "Section 126",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": 0.6,
+          "y": -29.99
+        },
+        {
+          "x": 0.99,
+          "y": -49.99
+        },
+        {
+          "x": -6.21,
+          "y": -49.61
+        },
+        {
+          "x": -3.73,
+          "y": -29.77
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_26",
+      "name": "Section 226",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": 1.03,
+          "y": -51.99
+        },
+        {
+          "x": 1.47,
+          "y": -73.99
+        },
+        {
+          "x": -9.2,
+          "y": -73.43
+        },
+        {
+          "x": -6.46,
+          "y": -51.6
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_26",
+      "name": "Section 326",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": 1.51,
+          "y": -75.98
+        },
+        {
+          "x": 1.95,
+          "y": -97.98
+        },
+        {
+          "x": -12.18,
+          "y": -97.24
+        },
+        {
+          "x": -9.45,
+          "y": -75.41
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_27",
+      "name": "Section 127",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -4.1,
+          "y": -29.72
+        },
+        {
+          "x": -6.84,
+          "y": -49.53
+        },
+        {
+          "x": -13.9,
+          "y": -48.03
+        },
+        {
+          "x": -8.34,
+          "y": -28.82
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_27",
+      "name": "Section 227",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -7.11,
+          "y": -51.51
+        },
+        {
+          "x": -10.12,
+          "y": -73.3
+        },
+        {
+          "x": -20.57,
+          "y": -71.08
+        },
+        {
+          "x": -14.46,
+          "y": -49.95
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_27",
+      "name": "Section 327",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -10.39,
+          "y": -75.29
+        },
+        {
+          "x": -13.4,
+          "y": -97.08
+        },
+        {
+          "x": -27.24,
+          "y": -94.14
+        },
+        {
+          "x": -21.13,
+          "y": -73
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_28",
+      "name": "Section 128",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -8.7,
+          "y": -28.71
+        },
+        {
+          "x": -14.5,
+          "y": -47.85
+        },
+        {
+          "x": -21.24,
+          "y": -45.26
+        },
+        {
+          "x": -12.74,
+          "y": -27.16
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_28",
+      "name": "Section 228",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -15.08,
+          "y": -49.76
+        },
+        {
+          "x": -21.46,
+          "y": -70.82
+        },
+        {
+          "x": -31.44,
+          "y": -66.99
+        },
+        {
+          "x": -22.09,
+          "y": -47.07
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_28",
+      "name": "Section 328",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -22.04,
+          "y": -72.73
+        },
+        {
+          "x": -28.42,
+          "y": -93.79
+        },
+        {
+          "x": -41.63,
+          "y": -88.72
+        },
+        {
+          "x": -32.29,
+          "y": -68.8
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_29",
+      "name": "Section 129",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -13.09,
+          "y": -27
+        },
+        {
+          "x": -21.81,
+          "y": -44.99
+        },
+        {
+          "x": -28.06,
+          "y": -41.38
+        },
+        {
+          "x": -16.84,
+          "y": -24.83
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_29",
+      "name": "Section 229",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -22.68,
+          "y": -46.79
+        },
+        {
+          "x": -32.28,
+          "y": -66.59
+        },
+        {
+          "x": -41.53,
+          "y": -61.25
+        },
+        {
+          "x": -29.18,
+          "y": -43.04
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_29",
+      "name": "Section 329",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -33.15,
+          "y": -68.39
+        },
+        {
+          "x": -42.75,
+          "y": -88.19
+        },
+        {
+          "x": -55,
+          "y": -81.11
+        },
+        {
+          "x": -42.65,
+          "y": -62.9
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_30",
+      "name": "Section 130",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -17.15,
+          "y": -24.62
+        },
+        {
+          "x": -28.58,
+          "y": -41.03
+        },
+        {
+          "x": -34.19,
+          "y": -36.48
+        },
+        {
+          "x": -20.51,
+          "y": -21.89
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_30",
+      "name": "Section 230",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -29.72,
+          "y": -42.67
+        },
+        {
+          "x": -42.3,
+          "y": -60.72
+        },
+        {
+          "x": -50.6,
+          "y": -54
+        },
+        {
+          "x": -35.56,
+          "y": -37.94
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_30",
+      "name": "Section 330",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -43.44,
+          "y": -62.36
+        },
+        {
+          "x": -56.01,
+          "y": -80.41
+        },
+        {
+          "x": -67.01,
+          "y": -71.51
+        },
+        {
+          "x": -51.97,
+          "y": -55.46
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_31",
+      "name": "Section 131",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -20.79,
+          "y": -21.63
+        },
+        {
+          "x": -34.64,
+          "y": -36.05
+        },
+        {
+          "x": -39.48,
+          "y": -30.69
+        },
+        {
+          "x": -23.69,
+          "y": -18.41
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_31",
+      "name": "Section 231",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -36.03,
+          "y": -37.49
+        },
+        {
+          "x": -51.27,
+          "y": -53.36
+        },
+        {
+          "x": -58.42,
+          "y": -45.42
+        },
+        {
+          "x": -41.05,
+          "y": -31.91
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_31",
+      "name": "Section 331",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -52.66,
+          "y": -54.8
+        },
+        {
+          "x": -67.9,
+          "y": -70.66
+        },
+        {
+          "x": -77.37,
+          "y": -60.15
+        },
+        {
+          "x": -60,
+          "y": -46.64
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_32",
+      "name": "Section 132",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -23.91,
+          "y": -18.11
+        },
+        {
+          "x": -39.86,
+          "y": -30.19
+        },
+        {
+          "x": -43.79,
+          "y": -24.13
+        },
+        {
+          "x": -26.27,
+          "y": -14.48
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_32",
+      "name": "Section 232",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -41.45,
+          "y": -31.4
+        },
+        {
+          "x": -58.99,
+          "y": -44.68
+        },
+        {
+          "x": -64.81,
+          "y": -35.72
+        },
+        {
+          "x": -45.54,
+          "y": -25.1
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_32",
+      "name": "Section 332",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -60.58,
+          "y": -45.89
+        },
+        {
+          "x": -78.12,
+          "y": -59.17
+        },
+        {
+          "x": -85.83,
+          "y": -47.3
+        },
+        {
+          "x": -66.56,
+          "y": -36.68
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_33",
+      "name": "Section 133",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -26.45,
+          "y": -14.15
+        },
+        {
+          "x": -44.09,
+          "y": -23.58
+        },
+        {
+          "x": -47.03,
+          "y": -16.99
+        },
+        {
+          "x": -28.22,
+          "y": -10.19
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_33",
+      "name": "Section 233",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -45.85,
+          "y": -24.52
+        },
+        {
+          "x": -65.25,
+          "y": -34.9
+        },
+        {
+          "x": -69.6,
+          "y": -25.14
+        },
+        {
+          "x": -48.91,
+          "y": -17.67
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_33",
+      "name": "Section 333",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -67.02,
+          "y": -35.84
+        },
+        {
+          "x": -86.42,
+          "y": -46.22
+        },
+        {
+          "x": -92.17,
+          "y": -33.29
+        },
+        {
+          "x": -71.48,
+          "y": -25.82
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_34",
+      "name": "Section 134",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -28.34,
+          "y": -9.84
+        },
+        {
+          "x": -47.24,
+          "y": -16.39
+        },
+        {
+          "x": -49.1,
+          "y": -9.42
+        },
+        {
+          "x": -29.46,
+          "y": -5.65
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_34",
+      "name": "Section 234",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -49.13,
+          "y": -17.05
+        },
+        {
+          "x": -69.91,
+          "y": -24.26
+        },
+        {
+          "x": -72.67,
+          "y": -13.94
+        },
+        {
+          "x": -51.07,
+          "y": -9.8
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_34",
+      "name": "Section 334",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -71.8,
+          "y": -24.92
+        },
+        {
+          "x": -92.58,
+          "y": -32.13
+        },
+        {
+          "x": -96.24,
+          "y": -18.46
+        },
+        {
+          "x": -74.64,
+          "y": -14.32
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_35",
+      "name": "Section 135",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -29.53,
+          "y": -5.28
+        },
+        {
+          "x": -49.22,
+          "y": -8.8
+        },
+        {
+          "x": -49.97,
+          "y": -1.62
+        },
+        {
+          "x": -29.98,
+          "y": -0.97
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_35",
+      "name": "Section 235",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -51.19,
+          "y": -9.15
+        },
+        {
+          "x": -72.84,
+          "y": -13.03
+        },
+        {
+          "x": -73.96,
+          "y": -2.4
+        },
+        {
+          "x": -51.97,
+          "y": -1.69
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_35",
+      "name": "Section 335",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -74.81,
+          "y": -13.38
+        },
+        {
+          "x": -96.47,
+          "y": -17.25
+        },
+        {
+          "x": -97.95,
+          "y": -3.18
+        },
+        {
+          "x": -75.96,
+          "y": -2.47
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_36",
+      "name": "Section 136",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -29.99,
+          "y": -0.6
+        },
+        {
+          "x": -49.99,
+          "y": -0.99
+        },
+        {
+          "x": -49.61,
+          "y": 6.21
+        },
+        {
+          "x": -29.77,
+          "y": 3.73
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_36",
+      "name": "Section 236",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -51.99,
+          "y": -1.03
+        },
+        {
+          "x": -73.99,
+          "y": -1.47
+        },
+        {
+          "x": -73.43,
+          "y": 9.2
+        },
+        {
+          "x": -51.6,
+          "y": 6.46
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_36",
+      "name": "Section 336",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -75.98,
+          "y": -1.51
+        },
+        {
+          "x": -97.98,
+          "y": -1.95
+        },
+        {
+          "x": -97.24,
+          "y": 12.18
+        },
+        {
+          "x": -75.41,
+          "y": 9.45
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_37",
+      "name": "Section 137",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -29.72,
+          "y": 4.1
+        },
+        {
+          "x": -49.53,
+          "y": 6.84
+        },
+        {
+          "x": -48.03,
+          "y": 13.9
+        },
+        {
+          "x": -28.82,
+          "y": 8.34
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_37",
+      "name": "Section 237",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -51.51,
+          "y": 7.11
+        },
+        {
+          "x": -73.3,
+          "y": 10.12
+        },
+        {
+          "x": -71.08,
+          "y": 20.57
+        },
+        {
+          "x": -49.95,
+          "y": 14.46
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_37",
+      "name": "Section 337",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -75.29,
+          "y": 10.39
+        },
+        {
+          "x": -97.08,
+          "y": 13.4
+        },
+        {
+          "x": -94.14,
+          "y": 27.24
+        },
+        {
+          "x": -73,
+          "y": 21.13
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_38",
+      "name": "Section 138",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -28.71,
+          "y": 8.7
+        },
+        {
+          "x": -47.85,
+          "y": 14.5
+        },
+        {
+          "x": -45.26,
+          "y": 21.24
+        },
+        {
+          "x": -27.16,
+          "y": 12.74
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_38",
+      "name": "Section 238",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -49.76,
+          "y": 15.08
+        },
+        {
+          "x": -70.82,
+          "y": 21.46
+        },
+        {
+          "x": -66.99,
+          "y": 31.44
+        },
+        {
+          "x": -47.07,
+          "y": 22.09
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_38",
+      "name": "Section 338",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -72.73,
+          "y": 22.04
+        },
+        {
+          "x": -93.79,
+          "y": 28.42
+        },
+        {
+          "x": -88.72,
+          "y": 41.63
+        },
+        {
+          "x": -68.8,
+          "y": 32.29
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_39",
+      "name": "Section 139",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -27,
+          "y": 13.09
+        },
+        {
+          "x": -44.99,
+          "y": 21.81
+        },
+        {
+          "x": -41.38,
+          "y": 28.06
+        },
+        {
+          "x": -24.83,
+          "y": 16.84
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_39",
+      "name": "Section 239",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -46.79,
+          "y": 22.68
+        },
+        {
+          "x": -66.59,
+          "y": 32.28
+        },
+        {
+          "x": -61.25,
+          "y": 41.53
+        },
+        {
+          "x": -43.04,
+          "y": 29.18
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_39",
+      "name": "Section 339",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -68.39,
+          "y": 33.15
+        },
+        {
+          "x": -88.19,
+          "y": 42.75
+        },
+        {
+          "x": -81.11,
+          "y": 55
+        },
+        {
+          "x": -62.9,
+          "y": 42.65
+        }
+      ]
+    },
+    {
+      "id": "Z_S1_40",
+      "name": "Section 140",
+      "parentAnalysisZoneId": "AZ_BOWL_100",
+      "capacity": 210,
+      "polygon": [
+        {
+          "x": -24.62,
+          "y": 17.15
+        },
+        {
+          "x": -41.03,
+          "y": 28.58
+        },
+        {
+          "x": -36.48,
+          "y": 34.19
+        },
+        {
+          "x": -21.89,
+          "y": 20.51
+        }
+      ]
+    },
+    {
+      "id": "Z_S2_40",
+      "name": "Section 240",
+      "parentAnalysisZoneId": "AZ_BOWL_200",
+      "capacity": 250,
+      "polygon": [
+        {
+          "x": -42.67,
+          "y": 29.72
+        },
+        {
+          "x": -60.72,
+          "y": 42.3
+        },
+        {
+          "x": -54,
+          "y": 50.6
+        },
+        {
+          "x": -37.94,
+          "y": 35.56
+        }
+      ]
+    },
+    {
+      "id": "Z_S3_40",
+      "name": "Section 340",
+      "parentAnalysisZoneId": "AZ_BOWL_300",
+      "capacity": 180,
+      "polygon": [
+        {
+          "x": -62.36,
+          "y": 43.44
+        },
+        {
+          "x": -80.41,
+          "y": 56.01
+        },
+        {
+          "x": -71.51,
+          "y": 67.01
+        },
+        {
+          "x": -55.46,
+          "y": 51.97
+        }
+      ]
+    },
+    {
+      "id": "Z_CHAMP_WALK",
+      "name": "Champ Walk",
+      "parentAnalysisZoneId": "AZ_CONCOURSE",
+      "capacity": 900,
+      "polygon": [
+        {
+          "x": 65.91,
+          "y": 35.79
+        },
+        {
+          "x": 80.85,
+          "y": 43.9
+        },
+        {
+          "x": 88.21,
+          "y": -26.13
+        },
+        {
+          "x": 71.91,
+          "y": -21.3
+        }
+      ]
+    },
+    {
+      "id": "Z_FIGHTER_WALK",
+      "name": "Fighter Walk",
+      "parentAnalysisZoneId": "AZ_CONCOURSE",
+      "capacity": 900,
+      "polygon": [
+        {
+          "x": -25.04,
+          "y": 70.7
+        },
+        {
+          "x": -30.71,
+          "y": 86.72
+        },
+        {
+          "x": 39.61,
+          "y": 83.04
+        },
+        {
+          "x": 32.29,
+          "y": 67.69
+        }
+      ]
+    },
+    {
+      "id": "Z_WEST_LINK",
+      "name": "West Link",
+      "parentAnalysisZoneId": "AZ_CONCOURSE",
+      "capacity": 900,
+      "polygon": [
+        {
+          "x": -71.91,
+          "y": 21.3
+        },
+        {
+          "x": -88.21,
+          "y": 26.13
+        },
+        {
+          "x": -66.73,
+          "y": 63.33
+        },
+        {
+          "x": -54.4,
+          "y": 51.63
+        }
+      ]
+    },
+    {
+      "id": "Z_EAST_LINK",
+      "name": "East Link",
+      "parentAnalysisZoneId": "AZ_CONCOURSE",
+      "capacity": 900,
+      "polygon": [
+        {
+          "x": 74.36,
+          "y": -9.79
+        },
+        {
+          "x": 91.21,
+          "y": -12.01
+        },
+        {
+          "x": 30.71,
+          "y": -86.72
+        },
+        {
+          "x": 25.04,
+          "y": -70.7
+        }
+      ]
+    },
+    {
+      "id": "Z_SOUTH_LINK",
+      "name": "South Link",
+      "parentAnalysisZoneId": "AZ_CONCOURSE",
+      "capacity": 900,
+      "polygon": [
+        {
+          "x": -21.3,
+          "y": -71.91
+        },
+        {
+          "x": -26.13,
+          "y": -88.21
+        },
+        {
+          "x": -90.46,
+          "y": -16.77
+        },
+        {
+          "x": -73.74,
+          "y": -13.67
+        }
+      ]
+    },
+    {
+      "id": "Z_NORTH_LINK",
+      "name": "North Link",
+      "parentAnalysisZoneId": "AZ_CONCOURSE",
+      "capacity": 900,
+      "polygon": [
+        {
+          "x": 21.3,
+          "y": 71.91
+        },
+        {
+          "x": 26.13,
+          "y": 88.21
+        },
+        {
+          "x": 86.72,
+          "y": 30.71
+        },
+        {
+          "x": 70.7,
+          "y": 25.04
+        }
+      ]
+    },
+    {
+      "id": "Z_EXIT_EAST_ENTRANCE",
+      "name": "East Entrance",
+      "parentAnalysisZoneId": "AZ_EXTERNAL",
+      "capacity": 600,
+      "polygon": [
+        {
+          "x": 74.31,
+          "y": -100.64
+        },
+        {
+          "x": 94.31,
+          "y": -100.64
+        },
+        {
+          "x": 94.31,
+          "y": -86.64
+        },
+        {
+          "x": 74.31,
+          "y": -86.64
+        }
+      ]
+    },
+    {
+      "id": "Z_EXIT_NORTH_ENTRANCE",
+      "name": "North Entrance",
+      "parentAnalysisZoneId": "AZ_EXTERNAL",
+      "capacity": 600,
+      "polygon": [
+        {
+          "x": 83.64,
+          "y": 77.31
+        },
+        {
+          "x": 103.64,
+          "y": 77.31
+        },
+        {
+          "x": 103.64,
+          "y": 91.31
+        },
+        {
+          "x": 83.64,
+          "y": 91.31
+        }
+      ]
+    },
+    {
+      "id": "Z_EXIT_PREMIER_WEST",
+      "name": "Premier West",
+      "parentAnalysisZoneId": "AZ_EXTERNAL",
+      "capacity": 600,
+      "polygon": [
+        {
+          "x": -94.31,
+          "y": 86.64
+        },
+        {
+          "x": -74.31,
+          "y": 86.64
+        },
+        {
+          "x": -74.31,
+          "y": 100.64
+        },
+        {
+          "x": -94.31,
+          "y": 100.64
+        }
+      ]
+    },
+    {
+      "id": "Z_EXIT_PREMIER_ENTRANCE",
+      "name": "Premier Entrance",
+      "parentAnalysisZoneId": "AZ_EXTERNAL",
+      "capacity": 600,
+      "polygon": [
+        {
+          "x": -103.64,
+          "y": -91.31
+        },
+        {
+          "x": -83.64,
+          "y": -91.31
+        },
+        {
+          "x": -83.64,
+          "y": -77.31
+        },
+        {
+          "x": -103.64,
+          "y": -77.31
+        }
+      ]
+    }
   ],
-
   "graph": {
     "nodes": [
-      { "id": "ARENA_C", "routingZoneId": "Z_ARENA_CENTER", "pos": { "x": 0, "y": 0 } },
-
-      { "id": "L1", "routingZoneId": "Z_LS_01", "pos": { "x": 0, "y": -32 } },
-      { "id": "L2", "routingZoneId": "Z_LS_02", "pos": { "x": 23, "y": -23 } },
-      { "id": "L3", "routingZoneId": "Z_LS_03", "pos": { "x": 32, "y": 0 } },
-      { "id": "L4", "routingZoneId": "Z_LS_04", "pos": { "x": 23, "y": 23 } },
-      { "id": "L5", "routingZoneId": "Z_LS_05", "pos": { "x": 0, "y": 32 } },
-      { "id": "L6", "routingZoneId": "Z_LS_06", "pos": { "x": -23, "y": 23 } },
-      { "id": "L7", "routingZoneId": "Z_LS_07", "pos": { "x": -32, "y": 0 } },
-      { "id": "L8", "routingZoneId": "Z_LS_08", "pos": { "x": -23, "y": -23 } },
-
-      { "id": "U1", "routingZoneId": "Z_US_01", "pos": { "x": 0, "y": -52 } },
-      { "id": "U2", "routingZoneId": "Z_US_02", "pos": { "x": 37, "y": -37 } },
-      { "id": "U3", "routingZoneId": "Z_US_03", "pos": { "x": 52, "y": 0 } },
-      { "id": "U4", "routingZoneId": "Z_US_04", "pos": { "x": 37, "y": 37 } },
-      { "id": "U5", "routingZoneId": "Z_US_05", "pos": { "x": 0, "y": 52 } },
-      { "id": "U6", "routingZoneId": "Z_US_06", "pos": { "x": -37, "y": 37 } },
-      { "id": "U7", "routingZoneId": "Z_US_07", "pos": { "x": -52, "y": 0 } },
-      { "id": "U8", "routingZoneId": "Z_US_08", "pos": { "x": -37, "y": -37 } },
-
-      { "id": "CON_N", "routingZoneId": "Z_CON_N", "pos": { "x": 0, "y": -84 } },
-      { "id": "CON_E", "routingZoneId": "Z_CON_E", "pos": { "x": 84, "y": 0 } },
-      { "id": "CON_S", "routingZoneId": "Z_CON_S", "pos": { "x": 0, "y": 84 } },
-      { "id": "CON_W", "routingZoneId": "Z_CON_W", "pos": { "x": -84, "y": 0 } },
-
-      { "id": "STAIR_N", "routingZoneId": "Z_STAIR_N", "pos": { "x": 18, "y": -66 } },
-      { "id": "STAIR_E", "routingZoneId": "Z_STAIR_E", "pos": { "x": 66, "y": 18 } },
-      { "id": "STAIR_S", "routingZoneId": "Z_STAIR_S", "pos": { "x": -18, "y": 66 } },
-      { "id": "STAIR_W", "routingZoneId": "Z_STAIR_W", "pos": { "x": -66, "y": -18 } },
-
-      { "id": "PLAZA_E", "routingZoneId": "Z_PLAZA_E", "pos": { "x": 118, "y": 0 } },
-      { "id": "PLAZA_W", "routingZoneId": "Z_PLAZA_W", "pos": { "x": -118, "y": 0 } },
-
-      { "id": "EXIT_E", "routingZoneId": "Z_EXIT_E", "pos": { "x": 160, "y": 0 } },
-      { "id": "EXIT_W", "routingZoneId": "Z_EXIT_W", "pos": { "x": -160, "y": 0 } },
-      { "id": "EXIT_N", "routingZoneId": "Z_EXIT_N", "pos": { "x": 0, "y": -138 } },
-      { "id": "EXIT_S", "routingZoneId": "Z_EXIT_S", "pos": { "x": 0, "y": 138 } }
+      {
+        "id": "N_FLOOR_A",
+        "routingZoneId": "Z_FLOOR_A",
+        "pos": {
+          "x": -14.72,
+          "y": 16.35
+        }
+      },
+      {
+        "id": "N_FLOOR_B",
+        "routingZoneId": "Z_FLOOR_B",
+        "pos": {
+          "x": 1.15,
+          "y": 21.97
+        }
+      },
+      {
+        "id": "N_FLOOR_C",
+        "routingZoneId": "Z_FLOOR_C",
+        "pos": {
+          "x": 16.35,
+          "y": 14.72
+        }
+      },
+      {
+        "id": "N_FLOOR_D",
+        "routingZoneId": "Z_FLOOR_D",
+        "pos": {
+          "x": 21.97,
+          "y": -1.15
+        }
+      },
+      {
+        "id": "N_FLOOR_E",
+        "routingZoneId": "Z_FLOOR_E",
+        "pos": {
+          "x": 14.72,
+          "y": -16.35
+        }
+      },
+      {
+        "id": "N_FLOOR_F",
+        "routingZoneId": "Z_FLOOR_F",
+        "pos": {
+          "x": -1.15,
+          "y": -21.97
+        }
+      },
+      {
+        "id": "N_FLOOR_G",
+        "routingZoneId": "Z_FLOOR_G",
+        "pos": {
+          "x": -16.35,
+          "y": -14.72
+        }
+      },
+      {
+        "id": "N_FLOOR_H",
+        "routingZoneId": "Z_FLOOR_H",
+        "pos": {
+          "x": -21.97,
+          "y": 1.15
+        }
+      },
+      {
+        "id": "N_FLOOR_CORE",
+        "routingZoneId": "Z_FLOOR_CORE",
+        "pos": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": "N_S1_01",
+        "routingZoneId": "Z_S1_01",
+        "pos": {
+          "x": -29.44,
+          "y": 32.7
+        }
+      },
+      {
+        "id": "N_S2_01",
+        "routingZoneId": "Z_S2_01",
+        "pos": {
+          "x": -44.16,
+          "y": 49.05
+        }
+      },
+      {
+        "id": "N_S3_01",
+        "routingZoneId": "Z_S3_01",
+        "pos": {
+          "x": -60.22,
+          "y": 66.88
+        }
+      },
+      {
+        "id": "N_S1_02",
+        "routingZoneId": "Z_S1_02",
+        "pos": {
+          "x": -23.96,
+          "y": 36.9
+        }
+      },
+      {
+        "id": "N_S2_02",
+        "routingZoneId": "Z_S2_02",
+        "pos": {
+          "x": -35.95,
+          "y": 55.35
+        }
+      },
+      {
+        "id": "N_S3_02",
+        "routingZoneId": "Z_S3_02",
+        "pos": {
+          "x": -49.02,
+          "y": 75.48
+        }
+      },
+      {
+        "id": "N_S1_03",
+        "routingZoneId": "Z_S1_03",
+        "pos": {
+          "x": -17.9,
+          "y": 40.2
+        }
+      },
+      {
+        "id": "N_S2_03",
+        "routingZoneId": "Z_S2_03",
+        "pos": {
+          "x": -26.84,
+          "y": 60.29
+        }
+      },
+      {
+        "id": "N_S3_03",
+        "routingZoneId": "Z_S3_03",
+        "pos": {
+          "x": -36.61,
+          "y": 82.22
+        }
+      },
+      {
+        "id": "N_S1_04",
+        "routingZoneId": "Z_S1_04",
+        "pos": {
+          "x": -11.39,
+          "y": 42.5
+        }
+      },
+      {
+        "id": "N_S2_04",
+        "routingZoneId": "Z_S2_04",
+        "pos": {
+          "x": -17.08,
+          "y": 63.75
+        }
+      },
+      {
+        "id": "N_S3_04",
+        "routingZoneId": "Z_S3_04",
+        "pos": {
+          "x": -23.29,
+          "y": 86.93
+        }
+      },
+      {
+        "id": "N_S1_05",
+        "routingZoneId": "Z_S1_05",
+        "pos": {
+          "x": -4.6,
+          "y": 43.76
+        }
+      },
+      {
+        "id": "N_S2_05",
+        "routingZoneId": "Z_S2_05",
+        "pos": {
+          "x": -6.9,
+          "y": 65.64
+        }
+      },
+      {
+        "id": "N_S3_05",
+        "routingZoneId": "Z_S3_05",
+        "pos": {
+          "x": -9.41,
+          "y": 89.51
+        }
+      },
+      {
+        "id": "N_S1_06",
+        "routingZoneId": "Z_S1_06",
+        "pos": {
+          "x": 2.3,
+          "y": 43.94
+        }
+      },
+      {
+        "id": "N_S2_06",
+        "routingZoneId": "Z_S2_06",
+        "pos": {
+          "x": 3.45,
+          "y": 65.91
+        }
+      },
+      {
+        "id": "N_S3_06",
+        "routingZoneId": "Z_S3_06",
+        "pos": {
+          "x": 4.71,
+          "y": 89.88
+        }
+      },
+      {
+        "id": "N_S1_07",
+        "routingZoneId": "Z_S1_07",
+        "pos": {
+          "x": 9.15,
+          "y": 43.04
+        }
+      },
+      {
+        "id": "N_S2_07",
+        "routingZoneId": "Z_S2_07",
+        "pos": {
+          "x": 13.72,
+          "y": 64.56
+        }
+      },
+      {
+        "id": "N_S3_07",
+        "routingZoneId": "Z_S3_07",
+        "pos": {
+          "x": 18.71,
+          "y": 88.03
+        }
+      },
+      {
+        "id": "N_S1_08",
+        "routingZoneId": "Z_S1_08",
+        "pos": {
+          "x": 15.77,
+          "y": 41.08
+        }
+      },
+      {
+        "id": "N_S2_08",
+        "routingZoneId": "Z_S2_08",
+        "pos": {
+          "x": 23.65,
+          "y": 61.62
+        }
+      },
+      {
+        "id": "N_S3_08",
+        "routingZoneId": "Z_S3_08",
+        "pos": {
+          "x": 32.25,
+          "y": 84.02
+        }
+      },
+      {
+        "id": "N_S1_09",
+        "routingZoneId": "Z_S1_09",
+        "pos": {
+          "x": 22,
+          "y": 38.11
+        }
+      },
+      {
+        "id": "N_S2_09",
+        "routingZoneId": "Z_S2_09",
+        "pos": {
+          "x": 33,
+          "y": 57.16
+        }
+      },
+      {
+        "id": "N_S3_09",
+        "routingZoneId": "Z_S3_09",
+        "pos": {
+          "x": 45,
+          "y": 77.94
+        }
+      },
+      {
+        "id": "N_S1_10",
+        "routingZoneId": "Z_S1_10",
+        "pos": {
+          "x": 27.69,
+          "y": 34.19
+        }
+      },
+      {
+        "id": "N_S2_10",
+        "routingZoneId": "Z_S2_10",
+        "pos": {
+          "x": 41.54,
+          "y": 51.29
+        }
+      },
+      {
+        "id": "N_S3_10",
+        "routingZoneId": "Z_S3_10",
+        "pos": {
+          "x": 56.64,
+          "y": 69.94
+        }
+      },
+      {
+        "id": "N_S1_11",
+        "routingZoneId": "Z_S1_11",
+        "pos": {
+          "x": 32.7,
+          "y": 29.44
+        }
+      },
+      {
+        "id": "N_S2_11",
+        "routingZoneId": "Z_S2_11",
+        "pos": {
+          "x": 49.05,
+          "y": 44.16
+        }
+      },
+      {
+        "id": "N_S3_11",
+        "routingZoneId": "Z_S3_11",
+        "pos": {
+          "x": 66.88,
+          "y": 60.22
+        }
+      },
+      {
+        "id": "N_S1_12",
+        "routingZoneId": "Z_S1_12",
+        "pos": {
+          "x": 36.9,
+          "y": 23.96
+        }
+      },
+      {
+        "id": "N_S2_12",
+        "routingZoneId": "Z_S2_12",
+        "pos": {
+          "x": 55.35,
+          "y": 35.95
+        }
+      },
+      {
+        "id": "N_S3_12",
+        "routingZoneId": "Z_S3_12",
+        "pos": {
+          "x": 75.48,
+          "y": 49.02
+        }
+      },
+      {
+        "id": "N_S1_13",
+        "routingZoneId": "Z_S1_13",
+        "pos": {
+          "x": 40.2,
+          "y": 17.9
+        }
+      },
+      {
+        "id": "N_S2_13",
+        "routingZoneId": "Z_S2_13",
+        "pos": {
+          "x": 60.29,
+          "y": 26.84
+        }
+      },
+      {
+        "id": "N_S3_13",
+        "routingZoneId": "Z_S3_13",
+        "pos": {
+          "x": 82.22,
+          "y": 36.61
+        }
+      },
+      {
+        "id": "N_S1_14",
+        "routingZoneId": "Z_S1_14",
+        "pos": {
+          "x": 42.5,
+          "y": 11.39
+        }
+      },
+      {
+        "id": "N_S2_14",
+        "routingZoneId": "Z_S2_14",
+        "pos": {
+          "x": 63.75,
+          "y": 17.08
+        }
+      },
+      {
+        "id": "N_S3_14",
+        "routingZoneId": "Z_S3_14",
+        "pos": {
+          "x": 86.93,
+          "y": 23.29
+        }
+      },
+      {
+        "id": "N_S1_15",
+        "routingZoneId": "Z_S1_15",
+        "pos": {
+          "x": 43.76,
+          "y": 4.6
+        }
+      },
+      {
+        "id": "N_S2_15",
+        "routingZoneId": "Z_S2_15",
+        "pos": {
+          "x": 65.64,
+          "y": 6.9
+        }
+      },
+      {
+        "id": "N_S3_15",
+        "routingZoneId": "Z_S3_15",
+        "pos": {
+          "x": 89.51,
+          "y": 9.41
+        }
+      },
+      {
+        "id": "N_S1_16",
+        "routingZoneId": "Z_S1_16",
+        "pos": {
+          "x": 43.94,
+          "y": -2.3
+        }
+      },
+      {
+        "id": "N_S2_16",
+        "routingZoneId": "Z_S2_16",
+        "pos": {
+          "x": 65.91,
+          "y": -3.45
+        }
+      },
+      {
+        "id": "N_S3_16",
+        "routingZoneId": "Z_S3_16",
+        "pos": {
+          "x": 89.88,
+          "y": -4.71
+        }
+      },
+      {
+        "id": "N_S1_17",
+        "routingZoneId": "Z_S1_17",
+        "pos": {
+          "x": 43.04,
+          "y": -9.15
+        }
+      },
+      {
+        "id": "N_S2_17",
+        "routingZoneId": "Z_S2_17",
+        "pos": {
+          "x": 64.56,
+          "y": -13.72
+        }
+      },
+      {
+        "id": "N_S3_17",
+        "routingZoneId": "Z_S3_17",
+        "pos": {
+          "x": 88.03,
+          "y": -18.71
+        }
+      },
+      {
+        "id": "N_S1_18",
+        "routingZoneId": "Z_S1_18",
+        "pos": {
+          "x": 41.08,
+          "y": -15.77
+        }
+      },
+      {
+        "id": "N_S2_18",
+        "routingZoneId": "Z_S2_18",
+        "pos": {
+          "x": 61.62,
+          "y": -23.65
+        }
+      },
+      {
+        "id": "N_S3_18",
+        "routingZoneId": "Z_S3_18",
+        "pos": {
+          "x": 84.02,
+          "y": -32.25
+        }
+      },
+      {
+        "id": "N_S1_19",
+        "routingZoneId": "Z_S1_19",
+        "pos": {
+          "x": 38.11,
+          "y": -22
+        }
+      },
+      {
+        "id": "N_S2_19",
+        "routingZoneId": "Z_S2_19",
+        "pos": {
+          "x": 57.16,
+          "y": -33
+        }
+      },
+      {
+        "id": "N_S3_19",
+        "routingZoneId": "Z_S3_19",
+        "pos": {
+          "x": 77.94,
+          "y": -45
+        }
+      },
+      {
+        "id": "N_S1_20",
+        "routingZoneId": "Z_S1_20",
+        "pos": {
+          "x": 34.19,
+          "y": -27.69
+        }
+      },
+      {
+        "id": "N_S2_20",
+        "routingZoneId": "Z_S2_20",
+        "pos": {
+          "x": 51.29,
+          "y": -41.54
+        }
+      },
+      {
+        "id": "N_S3_20",
+        "routingZoneId": "Z_S3_20",
+        "pos": {
+          "x": 69.94,
+          "y": -56.64
+        }
+      },
+      {
+        "id": "N_S1_21",
+        "routingZoneId": "Z_S1_21",
+        "pos": {
+          "x": 29.44,
+          "y": -32.7
+        }
+      },
+      {
+        "id": "N_S2_21",
+        "routingZoneId": "Z_S2_21",
+        "pos": {
+          "x": 44.16,
+          "y": -49.05
+        }
+      },
+      {
+        "id": "N_S3_21",
+        "routingZoneId": "Z_S3_21",
+        "pos": {
+          "x": 60.22,
+          "y": -66.88
+        }
+      },
+      {
+        "id": "N_S1_22",
+        "routingZoneId": "Z_S1_22",
+        "pos": {
+          "x": 23.96,
+          "y": -36.9
+        }
+      },
+      {
+        "id": "N_S2_22",
+        "routingZoneId": "Z_S2_22",
+        "pos": {
+          "x": 35.95,
+          "y": -55.35
+        }
+      },
+      {
+        "id": "N_S3_22",
+        "routingZoneId": "Z_S3_22",
+        "pos": {
+          "x": 49.02,
+          "y": -75.48
+        }
+      },
+      {
+        "id": "N_S1_23",
+        "routingZoneId": "Z_S1_23",
+        "pos": {
+          "x": 17.9,
+          "y": -40.2
+        }
+      },
+      {
+        "id": "N_S2_23",
+        "routingZoneId": "Z_S2_23",
+        "pos": {
+          "x": 26.84,
+          "y": -60.29
+        }
+      },
+      {
+        "id": "N_S3_23",
+        "routingZoneId": "Z_S3_23",
+        "pos": {
+          "x": 36.61,
+          "y": -82.22
+        }
+      },
+      {
+        "id": "N_S1_24",
+        "routingZoneId": "Z_S1_24",
+        "pos": {
+          "x": 11.39,
+          "y": -42.5
+        }
+      },
+      {
+        "id": "N_S2_24",
+        "routingZoneId": "Z_S2_24",
+        "pos": {
+          "x": 17.08,
+          "y": -63.75
+        }
+      },
+      {
+        "id": "N_S3_24",
+        "routingZoneId": "Z_S3_24",
+        "pos": {
+          "x": 23.29,
+          "y": -86.93
+        }
+      },
+      {
+        "id": "N_S1_25",
+        "routingZoneId": "Z_S1_25",
+        "pos": {
+          "x": 4.6,
+          "y": -43.76
+        }
+      },
+      {
+        "id": "N_S2_25",
+        "routingZoneId": "Z_S2_25",
+        "pos": {
+          "x": 6.9,
+          "y": -65.64
+        }
+      },
+      {
+        "id": "N_S3_25",
+        "routingZoneId": "Z_S3_25",
+        "pos": {
+          "x": 9.41,
+          "y": -89.51
+        }
+      },
+      {
+        "id": "N_S1_26",
+        "routingZoneId": "Z_S1_26",
+        "pos": {
+          "x": -2.3,
+          "y": -43.94
+        }
+      },
+      {
+        "id": "N_S2_26",
+        "routingZoneId": "Z_S2_26",
+        "pos": {
+          "x": -3.45,
+          "y": -65.91
+        }
+      },
+      {
+        "id": "N_S3_26",
+        "routingZoneId": "Z_S3_26",
+        "pos": {
+          "x": -4.71,
+          "y": -89.88
+        }
+      },
+      {
+        "id": "N_S1_27",
+        "routingZoneId": "Z_S1_27",
+        "pos": {
+          "x": -9.15,
+          "y": -43.04
+        }
+      },
+      {
+        "id": "N_S2_27",
+        "routingZoneId": "Z_S2_27",
+        "pos": {
+          "x": -13.72,
+          "y": -64.56
+        }
+      },
+      {
+        "id": "N_S3_27",
+        "routingZoneId": "Z_S3_27",
+        "pos": {
+          "x": -18.71,
+          "y": -88.03
+        }
+      },
+      {
+        "id": "N_S1_28",
+        "routingZoneId": "Z_S1_28",
+        "pos": {
+          "x": -15.77,
+          "y": -41.08
+        }
+      },
+      {
+        "id": "N_S2_28",
+        "routingZoneId": "Z_S2_28",
+        "pos": {
+          "x": -23.65,
+          "y": -61.62
+        }
+      },
+      {
+        "id": "N_S3_28",
+        "routingZoneId": "Z_S3_28",
+        "pos": {
+          "x": -32.25,
+          "y": -84.02
+        }
+      },
+      {
+        "id": "N_S1_29",
+        "routingZoneId": "Z_S1_29",
+        "pos": {
+          "x": -22,
+          "y": -38.11
+        }
+      },
+      {
+        "id": "N_S2_29",
+        "routingZoneId": "Z_S2_29",
+        "pos": {
+          "x": -33,
+          "y": -57.16
+        }
+      },
+      {
+        "id": "N_S3_29",
+        "routingZoneId": "Z_S3_29",
+        "pos": {
+          "x": -45,
+          "y": -77.94
+        }
+      },
+      {
+        "id": "N_S1_30",
+        "routingZoneId": "Z_S1_30",
+        "pos": {
+          "x": -27.69,
+          "y": -34.19
+        }
+      },
+      {
+        "id": "N_S2_30",
+        "routingZoneId": "Z_S2_30",
+        "pos": {
+          "x": -41.54,
+          "y": -51.29
+        }
+      },
+      {
+        "id": "N_S3_30",
+        "routingZoneId": "Z_S3_30",
+        "pos": {
+          "x": -56.64,
+          "y": -69.94
+        }
+      },
+      {
+        "id": "N_S1_31",
+        "routingZoneId": "Z_S1_31",
+        "pos": {
+          "x": -32.7,
+          "y": -29.44
+        }
+      },
+      {
+        "id": "N_S2_31",
+        "routingZoneId": "Z_S2_31",
+        "pos": {
+          "x": -49.05,
+          "y": -44.16
+        }
+      },
+      {
+        "id": "N_S3_31",
+        "routingZoneId": "Z_S3_31",
+        "pos": {
+          "x": -66.88,
+          "y": -60.22
+        }
+      },
+      {
+        "id": "N_S1_32",
+        "routingZoneId": "Z_S1_32",
+        "pos": {
+          "x": -36.9,
+          "y": -23.96
+        }
+      },
+      {
+        "id": "N_S2_32",
+        "routingZoneId": "Z_S2_32",
+        "pos": {
+          "x": -55.35,
+          "y": -35.95
+        }
+      },
+      {
+        "id": "N_S3_32",
+        "routingZoneId": "Z_S3_32",
+        "pos": {
+          "x": -75.48,
+          "y": -49.02
+        }
+      },
+      {
+        "id": "N_S1_33",
+        "routingZoneId": "Z_S1_33",
+        "pos": {
+          "x": -40.2,
+          "y": -17.9
+        }
+      },
+      {
+        "id": "N_S2_33",
+        "routingZoneId": "Z_S2_33",
+        "pos": {
+          "x": -60.29,
+          "y": -26.84
+        }
+      },
+      {
+        "id": "N_S3_33",
+        "routingZoneId": "Z_S3_33",
+        "pos": {
+          "x": -82.22,
+          "y": -36.61
+        }
+      },
+      {
+        "id": "N_S1_34",
+        "routingZoneId": "Z_S1_34",
+        "pos": {
+          "x": -42.5,
+          "y": -11.39
+        }
+      },
+      {
+        "id": "N_S2_34",
+        "routingZoneId": "Z_S2_34",
+        "pos": {
+          "x": -63.75,
+          "y": -17.08
+        }
+      },
+      {
+        "id": "N_S3_34",
+        "routingZoneId": "Z_S3_34",
+        "pos": {
+          "x": -86.93,
+          "y": -23.29
+        }
+      },
+      {
+        "id": "N_S1_35",
+        "routingZoneId": "Z_S1_35",
+        "pos": {
+          "x": -43.76,
+          "y": -4.6
+        }
+      },
+      {
+        "id": "N_S2_35",
+        "routingZoneId": "Z_S2_35",
+        "pos": {
+          "x": -65.64,
+          "y": -6.9
+        }
+      },
+      {
+        "id": "N_S3_35",
+        "routingZoneId": "Z_S3_35",
+        "pos": {
+          "x": -89.51,
+          "y": -9.41
+        }
+      },
+      {
+        "id": "N_S1_36",
+        "routingZoneId": "Z_S1_36",
+        "pos": {
+          "x": -43.94,
+          "y": 2.3
+        }
+      },
+      {
+        "id": "N_S2_36",
+        "routingZoneId": "Z_S2_36",
+        "pos": {
+          "x": -65.91,
+          "y": 3.45
+        }
+      },
+      {
+        "id": "N_S3_36",
+        "routingZoneId": "Z_S3_36",
+        "pos": {
+          "x": -89.88,
+          "y": 4.71
+        }
+      },
+      {
+        "id": "N_S1_37",
+        "routingZoneId": "Z_S1_37",
+        "pos": {
+          "x": -43.04,
+          "y": 9.15
+        }
+      },
+      {
+        "id": "N_S2_37",
+        "routingZoneId": "Z_S2_37",
+        "pos": {
+          "x": -64.56,
+          "y": 13.72
+        }
+      },
+      {
+        "id": "N_S3_37",
+        "routingZoneId": "Z_S3_37",
+        "pos": {
+          "x": -88.03,
+          "y": 18.71
+        }
+      },
+      {
+        "id": "N_S1_38",
+        "routingZoneId": "Z_S1_38",
+        "pos": {
+          "x": -41.08,
+          "y": 15.77
+        }
+      },
+      {
+        "id": "N_S2_38",
+        "routingZoneId": "Z_S2_38",
+        "pos": {
+          "x": -61.62,
+          "y": 23.65
+        }
+      },
+      {
+        "id": "N_S3_38",
+        "routingZoneId": "Z_S3_38",
+        "pos": {
+          "x": -84.02,
+          "y": 32.25
+        }
+      },
+      {
+        "id": "N_S1_39",
+        "routingZoneId": "Z_S1_39",
+        "pos": {
+          "x": -38.11,
+          "y": 22
+        }
+      },
+      {
+        "id": "N_S2_39",
+        "routingZoneId": "Z_S2_39",
+        "pos": {
+          "x": -57.16,
+          "y": 33
+        }
+      },
+      {
+        "id": "N_S3_39",
+        "routingZoneId": "Z_S3_39",
+        "pos": {
+          "x": -77.94,
+          "y": 45
+        }
+      },
+      {
+        "id": "N_S1_40",
+        "routingZoneId": "Z_S1_40",
+        "pos": {
+          "x": -34.19,
+          "y": 27.69
+        }
+      },
+      {
+        "id": "N_S2_40",
+        "routingZoneId": "Z_S2_40",
+        "pos": {
+          "x": -51.29,
+          "y": 41.54
+        }
+      },
+      {
+        "id": "N_S3_40",
+        "routingZoneId": "Z_S3_40",
+        "pos": {
+          "x": -69.94,
+          "y": 56.64
+        }
+      },
+      {
+        "id": "N_Z_CHAMP_WALK",
+        "routingZoneId": "Z_CHAMP_WALK",
+        "pos": {
+          "x": 73.9,
+          "y": -3.87
+        }
+      },
+      {
+        "id": "N_Z_FIGHTER_WALK",
+        "routingZoneId": "Z_FIGHTER_WALK",
+        "pos": {
+          "x": 3.87,
+          "y": 73.9
+        }
+      },
+      {
+        "id": "N_Z_WEST_LINK",
+        "routingZoneId": "Z_WEST_LINK",
+        "pos": {
+          "x": -49.52,
+          "y": 54.99
+        }
+      },
+      {
+        "id": "N_Z_EAST_LINK",
+        "routingZoneId": "Z_EAST_LINK",
+        "pos": {
+          "x": 49.52,
+          "y": -54.99
+        }
+      },
+      {
+        "id": "N_Z_SOUTH_LINK",
+        "routingZoneId": "Z_SOUTH_LINK",
+        "pos": {
+          "x": -54.99,
+          "y": -49.52
+        }
+      },
+      {
+        "id": "N_Z_NORTH_LINK",
+        "routingZoneId": "Z_NORTH_LINK",
+        "pos": {
+          "x": 54.99,
+          "y": 49.52
+        }
+      },
+      {
+        "id": "EXIT_EAST",
+        "routingZoneId": "Z_EXIT_EAST_ENTRANCE",
+        "pos": {
+          "x": 84.31,
+          "y": -93.64
+        }
+      },
+      {
+        "id": "EXIT_NORTH",
+        "routingZoneId": "Z_EXIT_NORTH_ENTRANCE",
+        "pos": {
+          "x": 93.64,
+          "y": 84.31
+        }
+      },
+      {
+        "id": "EXIT_PREMIER_WEST",
+        "routingZoneId": "Z_EXIT_PREMIER_WEST",
+        "pos": {
+          "x": -84.31,
+          "y": 93.64
+        }
+      },
+      {
+        "id": "EXIT_PREMIER_ENTRANCE",
+        "routingZoneId": "Z_EXIT_PREMIER_ENTRANCE",
+        "pos": {
+          "x": -93.64,
+          "y": -84.31
+        }
+      }
     ],
-
     "edges": [
-      { "id": "E001", "from": "ARENA_C", "to": "L1", "length": 32, "routingZoneId": "Z_LS_01" },
-      { "id": "E002", "from": "ARENA_C", "to": "L2", "length": 32, "routingZoneId": "Z_LS_02" },
-      { "id": "E003", "from": "ARENA_C", "to": "L3", "length": 32, "routingZoneId": "Z_LS_03" },
-      { "id": "E004", "from": "ARENA_C", "to": "L4", "length": 32, "routingZoneId": "Z_LS_04" },
-      { "id": "E005", "from": "ARENA_C", "to": "L5", "length": 32, "routingZoneId": "Z_LS_05" },
-      { "id": "E006", "from": "ARENA_C", "to": "L6", "length": 32, "routingZoneId": "Z_LS_06" },
-      { "id": "E007", "from": "ARENA_C", "to": "L7", "length": 32, "routingZoneId": "Z_LS_07" },
-      { "id": "E008", "from": "ARENA_C", "to": "L8", "length": 32, "routingZoneId": "Z_LS_08" },
-
-      { "id": "E009", "from": "L1", "to": "L2", "length": 18, "routingZoneId": "Z_LS_01" },
-      { "id": "E010", "from": "L2", "to": "L3", "length": 18, "routingZoneId": "Z_LS_02" },
-      { "id": "E011", "from": "L3", "to": "L4", "length": 18, "routingZoneId": "Z_LS_03" },
-      { "id": "E012", "from": "L4", "to": "L5", "length": 18, "routingZoneId": "Z_LS_04" },
-      { "id": "E013", "from": "L5", "to": "L6", "length": 18, "routingZoneId": "Z_LS_05" },
-      { "id": "E014", "from": "L6", "to": "L7", "length": 18, "routingZoneId": "Z_LS_06" },
-      { "id": "E015", "from": "L7", "to": "L8", "length": 18, "routingZoneId": "Z_LS_07" },
-      { "id": "E016", "from": "L8", "to": "L1", "length": 18, "routingZoneId": "Z_LS_08" },
-
-      { "id": "E017", "from": "L1", "to": "U1", "length": 20, "routingZoneId": "Z_STAIR_N" },
-      { "id": "E018", "from": "L3", "to": "U3", "length": 20, "routingZoneId": "Z_STAIR_E" },
-      { "id": "E019", "from": "L5", "to": "U5", "length": 20, "routingZoneId": "Z_STAIR_S" },
-      { "id": "E020", "from": "L7", "to": "U7", "length": 20, "routingZoneId": "Z_STAIR_W" },
-      { "id": "E021", "from": "L2", "to": "U2", "length": 20, "routingZoneId": "Z_STAIR_N" },
-      { "id": "E022", "from": "L4", "to": "U4", "length": 20, "routingZoneId": "Z_STAIR_E" },
-      { "id": "E023", "from": "L6", "to": "U6", "length": 20, "routingZoneId": "Z_STAIR_S" },
-      { "id": "E024", "from": "L8", "to": "U8", "length": 20, "routingZoneId": "Z_STAIR_W" },
-
-      { "id": "E025", "from": "U1", "to": "U2", "length": 26, "routingZoneId": "Z_US_01" },
-      { "id": "E026", "from": "U2", "to": "U3", "length": 26, "routingZoneId": "Z_US_02" },
-      { "id": "E027", "from": "U3", "to": "U4", "length": 26, "routingZoneId": "Z_US_03" },
-      { "id": "E028", "from": "U4", "to": "U5", "length": 26, "routingZoneId": "Z_US_04" },
-      { "id": "E029", "from": "U5", "to": "U6", "length": 26, "routingZoneId": "Z_US_05" },
-      { "id": "E030", "from": "U6", "to": "U7", "length": 26, "routingZoneId": "Z_US_06" },
-      { "id": "E031", "from": "U7", "to": "U8", "length": 26, "routingZoneId": "Z_US_07" },
-      { "id": "E032", "from": "U8", "to": "U1", "length": 26, "routingZoneId": "Z_US_08" },
-
-      { "id": "E033", "from": "U1", "to": "CON_N", "length": 32, "routingZoneId": "Z_CON_N" },
-      { "id": "E034", "from": "U3", "to": "CON_E", "length": 32, "routingZoneId": "Z_CON_E" },
-      { "id": "E035", "from": "U5", "to": "CON_S", "length": 32, "routingZoneId": "Z_CON_S" },
-      { "id": "E036", "from": "U7", "to": "CON_W", "length": 32, "routingZoneId": "Z_CON_W" },
-
-      { "id": "E037", "from": "L1", "to": "STAIR_N", "length": 40, "routingZoneId": "Z_STAIR_N" },
-      { "id": "E038", "from": "L3", "to": "STAIR_E", "length": 40, "routingZoneId": "Z_STAIR_E" },
-      { "id": "E039", "from": "L5", "to": "STAIR_S", "length": 40, "routingZoneId": "Z_STAIR_S" },
-      { "id": "E040", "from": "L7", "to": "STAIR_W", "length": 40, "routingZoneId": "Z_STAIR_W" },
-
-      { "id": "E041", "from": "STAIR_N", "to": "CON_N", "length": 20, "routingZoneId": "Z_CON_N" },
-      { "id": "E042", "from": "STAIR_E", "to": "CON_E", "length": 20, "routingZoneId": "Z_CON_E" },
-      { "id": "E043", "from": "STAIR_S", "to": "CON_S", "length": 20, "routingZoneId": "Z_CON_S" },
-      { "id": "E044", "from": "STAIR_W", "to": "CON_W", "length": 20, "routingZoneId": "Z_CON_W" },
-
-      { "id": "E045", "from": "CON_E", "to": "PLAZA_E", "length": 34, "routingZoneId": "Z_PLAZA_E" },
-      { "id": "E046", "from": "CON_W", "to": "PLAZA_W", "length": 34, "routingZoneId": "Z_PLAZA_W" },
-      { "id": "E047", "from": "CON_N", "to": "EXIT_N", "length": 54, "routingZoneId": "Z_EXIT_N" },
-      { "id": "E048", "from": "CON_S", "to": "EXIT_S", "length": 54, "routingZoneId": "Z_EXIT_S" },
-      { "id": "E049", "from": "PLAZA_E", "to": "EXIT_E", "length": 42, "routingZoneId": "Z_EXIT_E" },
-      { "id": "E050", "from": "PLAZA_W", "to": "EXIT_W", "length": 42, "routingZoneId": "Z_EXIT_W" },
-
-      { "id": "E051", "from": "CON_N", "to": "CON_E", "length": 118, "routingZoneId": "Z_CON_N" },
-      { "id": "E052", "from": "CON_E", "to": "CON_S", "length": 118, "routingZoneId": "Z_CON_E" },
-      { "id": "E053", "from": "CON_S", "to": "CON_W", "length": 118, "routingZoneId": "Z_CON_S" },
-      { "id": "E054", "from": "CON_W", "to": "CON_N", "length": 118, "routingZoneId": "Z_CON_W" }
+      {
+        "id": "E0001",
+        "from": "N_FLOOR_CORE",
+        "to": "N_FLOOR_A",
+        "length": 22,
+        "routingZoneId": "Z_FLOOR_A"
+      },
+      {
+        "id": "E0002",
+        "from": "N_FLOOR_CORE",
+        "to": "N_FLOOR_B",
+        "length": 22,
+        "routingZoneId": "Z_FLOOR_B"
+      },
+      {
+        "id": "E0003",
+        "from": "N_FLOOR_CORE",
+        "to": "N_FLOOR_C",
+        "length": 22,
+        "routingZoneId": "Z_FLOOR_C"
+      },
+      {
+        "id": "E0004",
+        "from": "N_FLOOR_CORE",
+        "to": "N_FLOOR_D",
+        "length": 22,
+        "routingZoneId": "Z_FLOOR_D"
+      },
+      {
+        "id": "E0005",
+        "from": "N_FLOOR_CORE",
+        "to": "N_FLOOR_E",
+        "length": 22,
+        "routingZoneId": "Z_FLOOR_E"
+      },
+      {
+        "id": "E0006",
+        "from": "N_FLOOR_CORE",
+        "to": "N_FLOOR_F",
+        "length": 22,
+        "routingZoneId": "Z_FLOOR_F"
+      },
+      {
+        "id": "E0007",
+        "from": "N_FLOOR_CORE",
+        "to": "N_FLOOR_G",
+        "length": 22,
+        "routingZoneId": "Z_FLOOR_G"
+      },
+      {
+        "id": "E0008",
+        "from": "N_FLOOR_CORE",
+        "to": "N_FLOOR_H",
+        "length": 22,
+        "routingZoneId": "Z_FLOOR_H"
+      },
+      {
+        "id": "E0009",
+        "from": "N_FLOOR_A",
+        "to": "N_FLOOR_B",
+        "length": 16,
+        "routingZoneId": "Z_FLOOR_A"
+      },
+      {
+        "id": "E0010",
+        "from": "N_FLOOR_B",
+        "to": "N_FLOOR_C",
+        "length": 16,
+        "routingZoneId": "Z_FLOOR_B"
+      },
+      {
+        "id": "E0011",
+        "from": "N_FLOOR_C",
+        "to": "N_FLOOR_D",
+        "length": 16,
+        "routingZoneId": "Z_FLOOR_C"
+      },
+      {
+        "id": "E0012",
+        "from": "N_FLOOR_D",
+        "to": "N_FLOOR_E",
+        "length": 16,
+        "routingZoneId": "Z_FLOOR_D"
+      },
+      {
+        "id": "E0013",
+        "from": "N_FLOOR_E",
+        "to": "N_FLOOR_F",
+        "length": 16,
+        "routingZoneId": "Z_FLOOR_E"
+      },
+      {
+        "id": "E0014",
+        "from": "N_FLOOR_F",
+        "to": "N_FLOOR_G",
+        "length": 16,
+        "routingZoneId": "Z_FLOOR_F"
+      },
+      {
+        "id": "E0015",
+        "from": "N_FLOOR_G",
+        "to": "N_FLOOR_H",
+        "length": 16,
+        "routingZoneId": "Z_FLOOR_G"
+      },
+      {
+        "id": "E0016",
+        "from": "N_FLOOR_H",
+        "to": "N_FLOOR_A",
+        "length": 16,
+        "routingZoneId": "Z_FLOOR_H"
+      },
+      {
+        "id": "E0017",
+        "from": "N_S1_01",
+        "to": "N_S1_02",
+        "length": 8,
+        "routingZoneId": "Z_S1_01"
+      },
+      {
+        "id": "E0018",
+        "from": "N_S2_01",
+        "to": "N_S2_02",
+        "length": 11,
+        "routingZoneId": "Z_S2_01"
+      },
+      {
+        "id": "E0019",
+        "from": "N_S3_01",
+        "to": "N_S3_02",
+        "length": 14,
+        "routingZoneId": "Z_S3_01"
+      },
+      {
+        "id": "E0020",
+        "from": "N_S1_01",
+        "to": "N_S2_01",
+        "length": 22,
+        "routingZoneId": "Z_S2_01"
+      },
+      {
+        "id": "E0021",
+        "from": "N_S2_01",
+        "to": "N_S3_01",
+        "length": 24,
+        "routingZoneId": "Z_S3_01"
+      },
+      {
+        "id": "E0022",
+        "from": "N_S1_02",
+        "to": "N_S1_03",
+        "length": 8,
+        "routingZoneId": "Z_S1_02"
+      },
+      {
+        "id": "E0023",
+        "from": "N_S2_02",
+        "to": "N_S2_03",
+        "length": 11,
+        "routingZoneId": "Z_S2_02"
+      },
+      {
+        "id": "E0024",
+        "from": "N_S3_02",
+        "to": "N_S3_03",
+        "length": 14,
+        "routingZoneId": "Z_S3_02"
+      },
+      {
+        "id": "E0025",
+        "from": "N_S1_02",
+        "to": "N_S2_02",
+        "length": 22,
+        "routingZoneId": "Z_S2_02"
+      },
+      {
+        "id": "E0026",
+        "from": "N_S2_02",
+        "to": "N_S3_02",
+        "length": 24,
+        "routingZoneId": "Z_S3_02"
+      },
+      {
+        "id": "E0027",
+        "from": "N_S1_03",
+        "to": "N_S1_04",
+        "length": 8,
+        "routingZoneId": "Z_S1_03"
+      },
+      {
+        "id": "E0028",
+        "from": "N_S2_03",
+        "to": "N_S2_04",
+        "length": 11,
+        "routingZoneId": "Z_S2_03"
+      },
+      {
+        "id": "E0029",
+        "from": "N_S3_03",
+        "to": "N_S3_04",
+        "length": 14,
+        "routingZoneId": "Z_S3_03"
+      },
+      {
+        "id": "E0030",
+        "from": "N_S1_03",
+        "to": "N_S2_03",
+        "length": 22,
+        "routingZoneId": "Z_S2_03"
+      },
+      {
+        "id": "E0031",
+        "from": "N_S2_03",
+        "to": "N_S3_03",
+        "length": 24,
+        "routingZoneId": "Z_S3_03"
+      },
+      {
+        "id": "E0032",
+        "from": "N_S1_04",
+        "to": "N_S1_05",
+        "length": 8,
+        "routingZoneId": "Z_S1_04"
+      },
+      {
+        "id": "E0033",
+        "from": "N_S2_04",
+        "to": "N_S2_05",
+        "length": 11,
+        "routingZoneId": "Z_S2_04"
+      },
+      {
+        "id": "E0034",
+        "from": "N_S3_04",
+        "to": "N_S3_05",
+        "length": 14,
+        "routingZoneId": "Z_S3_04"
+      },
+      {
+        "id": "E0035",
+        "from": "N_S1_04",
+        "to": "N_S2_04",
+        "length": 22,
+        "routingZoneId": "Z_S2_04"
+      },
+      {
+        "id": "E0036",
+        "from": "N_S2_04",
+        "to": "N_S3_04",
+        "length": 24,
+        "routingZoneId": "Z_S3_04"
+      },
+      {
+        "id": "E0037",
+        "from": "N_S1_05",
+        "to": "N_S1_06",
+        "length": 8,
+        "routingZoneId": "Z_S1_05"
+      },
+      {
+        "id": "E0038",
+        "from": "N_S2_05",
+        "to": "N_S2_06",
+        "length": 11,
+        "routingZoneId": "Z_S2_05"
+      },
+      {
+        "id": "E0039",
+        "from": "N_S3_05",
+        "to": "N_S3_06",
+        "length": 14,
+        "routingZoneId": "Z_S3_05"
+      },
+      {
+        "id": "E0040",
+        "from": "N_S1_05",
+        "to": "N_S2_05",
+        "length": 22,
+        "routingZoneId": "Z_S2_05"
+      },
+      {
+        "id": "E0041",
+        "from": "N_S2_05",
+        "to": "N_S3_05",
+        "length": 24,
+        "routingZoneId": "Z_S3_05"
+      },
+      {
+        "id": "E0042",
+        "from": "N_S1_06",
+        "to": "N_S1_07",
+        "length": 8,
+        "routingZoneId": "Z_S1_06"
+      },
+      {
+        "id": "E0043",
+        "from": "N_S2_06",
+        "to": "N_S2_07",
+        "length": 11,
+        "routingZoneId": "Z_S2_06"
+      },
+      {
+        "id": "E0044",
+        "from": "N_S3_06",
+        "to": "N_S3_07",
+        "length": 14,
+        "routingZoneId": "Z_S3_06"
+      },
+      {
+        "id": "E0045",
+        "from": "N_S1_06",
+        "to": "N_S2_06",
+        "length": 22,
+        "routingZoneId": "Z_S2_06"
+      },
+      {
+        "id": "E0046",
+        "from": "N_S2_06",
+        "to": "N_S3_06",
+        "length": 24,
+        "routingZoneId": "Z_S3_06"
+      },
+      {
+        "id": "E0047",
+        "from": "N_S1_07",
+        "to": "N_S1_08",
+        "length": 8,
+        "routingZoneId": "Z_S1_07"
+      },
+      {
+        "id": "E0048",
+        "from": "N_S2_07",
+        "to": "N_S2_08",
+        "length": 11,
+        "routingZoneId": "Z_S2_07"
+      },
+      {
+        "id": "E0049",
+        "from": "N_S3_07",
+        "to": "N_S3_08",
+        "length": 14,
+        "routingZoneId": "Z_S3_07"
+      },
+      {
+        "id": "E0050",
+        "from": "N_S1_07",
+        "to": "N_S2_07",
+        "length": 22,
+        "routingZoneId": "Z_S2_07"
+      },
+      {
+        "id": "E0051",
+        "from": "N_S2_07",
+        "to": "N_S3_07",
+        "length": 24,
+        "routingZoneId": "Z_S3_07"
+      },
+      {
+        "id": "E0052",
+        "from": "N_S1_08",
+        "to": "N_S1_09",
+        "length": 8,
+        "routingZoneId": "Z_S1_08"
+      },
+      {
+        "id": "E0053",
+        "from": "N_S2_08",
+        "to": "N_S2_09",
+        "length": 11,
+        "routingZoneId": "Z_S2_08"
+      },
+      {
+        "id": "E0054",
+        "from": "N_S3_08",
+        "to": "N_S3_09",
+        "length": 14,
+        "routingZoneId": "Z_S3_08"
+      },
+      {
+        "id": "E0055",
+        "from": "N_S1_08",
+        "to": "N_S2_08",
+        "length": 22,
+        "routingZoneId": "Z_S2_08"
+      },
+      {
+        "id": "E0056",
+        "from": "N_S2_08",
+        "to": "N_S3_08",
+        "length": 24,
+        "routingZoneId": "Z_S3_08"
+      },
+      {
+        "id": "E0057",
+        "from": "N_S1_09",
+        "to": "N_S1_10",
+        "length": 8,
+        "routingZoneId": "Z_S1_09"
+      },
+      {
+        "id": "E0058",
+        "from": "N_S2_09",
+        "to": "N_S2_10",
+        "length": 11,
+        "routingZoneId": "Z_S2_09"
+      },
+      {
+        "id": "E0059",
+        "from": "N_S3_09",
+        "to": "N_S3_10",
+        "length": 14,
+        "routingZoneId": "Z_S3_09"
+      },
+      {
+        "id": "E0060",
+        "from": "N_S1_09",
+        "to": "N_S2_09",
+        "length": 22,
+        "routingZoneId": "Z_S2_09"
+      },
+      {
+        "id": "E0061",
+        "from": "N_S2_09",
+        "to": "N_S3_09",
+        "length": 24,
+        "routingZoneId": "Z_S3_09"
+      },
+      {
+        "id": "E0062",
+        "from": "N_S1_10",
+        "to": "N_S1_11",
+        "length": 8,
+        "routingZoneId": "Z_S1_10"
+      },
+      {
+        "id": "E0063",
+        "from": "N_S2_10",
+        "to": "N_S2_11",
+        "length": 11,
+        "routingZoneId": "Z_S2_10"
+      },
+      {
+        "id": "E0064",
+        "from": "N_S3_10",
+        "to": "N_S3_11",
+        "length": 14,
+        "routingZoneId": "Z_S3_10"
+      },
+      {
+        "id": "E0065",
+        "from": "N_S1_10",
+        "to": "N_S2_10",
+        "length": 22,
+        "routingZoneId": "Z_S2_10"
+      },
+      {
+        "id": "E0066",
+        "from": "N_S2_10",
+        "to": "N_S3_10",
+        "length": 24,
+        "routingZoneId": "Z_S3_10"
+      },
+      {
+        "id": "E0067",
+        "from": "N_S1_11",
+        "to": "N_S1_12",
+        "length": 8,
+        "routingZoneId": "Z_S1_11"
+      },
+      {
+        "id": "E0068",
+        "from": "N_S2_11",
+        "to": "N_S2_12",
+        "length": 11,
+        "routingZoneId": "Z_S2_11"
+      },
+      {
+        "id": "E0069",
+        "from": "N_S3_11",
+        "to": "N_S3_12",
+        "length": 14,
+        "routingZoneId": "Z_S3_11"
+      },
+      {
+        "id": "E0070",
+        "from": "N_S1_11",
+        "to": "N_S2_11",
+        "length": 22,
+        "routingZoneId": "Z_S2_11"
+      },
+      {
+        "id": "E0071",
+        "from": "N_S2_11",
+        "to": "N_S3_11",
+        "length": 24,
+        "routingZoneId": "Z_S3_11"
+      },
+      {
+        "id": "E0072",
+        "from": "N_S1_12",
+        "to": "N_S1_13",
+        "length": 8,
+        "routingZoneId": "Z_S1_12"
+      },
+      {
+        "id": "E0073",
+        "from": "N_S2_12",
+        "to": "N_S2_13",
+        "length": 11,
+        "routingZoneId": "Z_S2_12"
+      },
+      {
+        "id": "E0074",
+        "from": "N_S3_12",
+        "to": "N_S3_13",
+        "length": 14,
+        "routingZoneId": "Z_S3_12"
+      },
+      {
+        "id": "E0075",
+        "from": "N_S1_12",
+        "to": "N_S2_12",
+        "length": 22,
+        "routingZoneId": "Z_S2_12"
+      },
+      {
+        "id": "E0076",
+        "from": "N_S2_12",
+        "to": "N_S3_12",
+        "length": 24,
+        "routingZoneId": "Z_S3_12"
+      },
+      {
+        "id": "E0077",
+        "from": "N_S1_13",
+        "to": "N_S1_14",
+        "length": 8,
+        "routingZoneId": "Z_S1_13"
+      },
+      {
+        "id": "E0078",
+        "from": "N_S2_13",
+        "to": "N_S2_14",
+        "length": 11,
+        "routingZoneId": "Z_S2_13"
+      },
+      {
+        "id": "E0079",
+        "from": "N_S3_13",
+        "to": "N_S3_14",
+        "length": 14,
+        "routingZoneId": "Z_S3_13"
+      },
+      {
+        "id": "E0080",
+        "from": "N_S1_13",
+        "to": "N_S2_13",
+        "length": 22,
+        "routingZoneId": "Z_S2_13"
+      },
+      {
+        "id": "E0081",
+        "from": "N_S2_13",
+        "to": "N_S3_13",
+        "length": 24,
+        "routingZoneId": "Z_S3_13"
+      },
+      {
+        "id": "E0082",
+        "from": "N_S1_14",
+        "to": "N_S1_15",
+        "length": 8,
+        "routingZoneId": "Z_S1_14"
+      },
+      {
+        "id": "E0083",
+        "from": "N_S2_14",
+        "to": "N_S2_15",
+        "length": 11,
+        "routingZoneId": "Z_S2_14"
+      },
+      {
+        "id": "E0084",
+        "from": "N_S3_14",
+        "to": "N_S3_15",
+        "length": 14,
+        "routingZoneId": "Z_S3_14"
+      },
+      {
+        "id": "E0085",
+        "from": "N_S1_14",
+        "to": "N_S2_14",
+        "length": 22,
+        "routingZoneId": "Z_S2_14"
+      },
+      {
+        "id": "E0086",
+        "from": "N_S2_14",
+        "to": "N_S3_14",
+        "length": 24,
+        "routingZoneId": "Z_S3_14"
+      },
+      {
+        "id": "E0087",
+        "from": "N_S1_15",
+        "to": "N_S1_16",
+        "length": 8,
+        "routingZoneId": "Z_S1_15"
+      },
+      {
+        "id": "E0088",
+        "from": "N_S2_15",
+        "to": "N_S2_16",
+        "length": 11,
+        "routingZoneId": "Z_S2_15"
+      },
+      {
+        "id": "E0089",
+        "from": "N_S3_15",
+        "to": "N_S3_16",
+        "length": 14,
+        "routingZoneId": "Z_S3_15"
+      },
+      {
+        "id": "E0090",
+        "from": "N_S1_15",
+        "to": "N_S2_15",
+        "length": 22,
+        "routingZoneId": "Z_S2_15"
+      },
+      {
+        "id": "E0091",
+        "from": "N_S2_15",
+        "to": "N_S3_15",
+        "length": 24,
+        "routingZoneId": "Z_S3_15"
+      },
+      {
+        "id": "E0092",
+        "from": "N_S1_16",
+        "to": "N_S1_17",
+        "length": 8,
+        "routingZoneId": "Z_S1_16"
+      },
+      {
+        "id": "E0093",
+        "from": "N_S2_16",
+        "to": "N_S2_17",
+        "length": 11,
+        "routingZoneId": "Z_S2_16"
+      },
+      {
+        "id": "E0094",
+        "from": "N_S3_16",
+        "to": "N_S3_17",
+        "length": 14,
+        "routingZoneId": "Z_S3_16"
+      },
+      {
+        "id": "E0095",
+        "from": "N_S1_16",
+        "to": "N_S2_16",
+        "length": 22,
+        "routingZoneId": "Z_S2_16"
+      },
+      {
+        "id": "E0096",
+        "from": "N_S2_16",
+        "to": "N_S3_16",
+        "length": 24,
+        "routingZoneId": "Z_S3_16"
+      },
+      {
+        "id": "E0097",
+        "from": "N_S1_17",
+        "to": "N_S1_18",
+        "length": 8,
+        "routingZoneId": "Z_S1_17"
+      },
+      {
+        "id": "E0098",
+        "from": "N_S2_17",
+        "to": "N_S2_18",
+        "length": 11,
+        "routingZoneId": "Z_S2_17"
+      },
+      {
+        "id": "E0099",
+        "from": "N_S3_17",
+        "to": "N_S3_18",
+        "length": 14,
+        "routingZoneId": "Z_S3_17"
+      },
+      {
+        "id": "E0100",
+        "from": "N_S1_17",
+        "to": "N_S2_17",
+        "length": 22,
+        "routingZoneId": "Z_S2_17"
+      },
+      {
+        "id": "E0101",
+        "from": "N_S2_17",
+        "to": "N_S3_17",
+        "length": 24,
+        "routingZoneId": "Z_S3_17"
+      },
+      {
+        "id": "E0102",
+        "from": "N_S1_18",
+        "to": "N_S1_19",
+        "length": 8,
+        "routingZoneId": "Z_S1_18"
+      },
+      {
+        "id": "E0103",
+        "from": "N_S2_18",
+        "to": "N_S2_19",
+        "length": 11,
+        "routingZoneId": "Z_S2_18"
+      },
+      {
+        "id": "E0104",
+        "from": "N_S3_18",
+        "to": "N_S3_19",
+        "length": 14,
+        "routingZoneId": "Z_S3_18"
+      },
+      {
+        "id": "E0105",
+        "from": "N_S1_18",
+        "to": "N_S2_18",
+        "length": 22,
+        "routingZoneId": "Z_S2_18"
+      },
+      {
+        "id": "E0106",
+        "from": "N_S2_18",
+        "to": "N_S3_18",
+        "length": 24,
+        "routingZoneId": "Z_S3_18"
+      },
+      {
+        "id": "E0107",
+        "from": "N_S1_19",
+        "to": "N_S1_20",
+        "length": 8,
+        "routingZoneId": "Z_S1_19"
+      },
+      {
+        "id": "E0108",
+        "from": "N_S2_19",
+        "to": "N_S2_20",
+        "length": 11,
+        "routingZoneId": "Z_S2_19"
+      },
+      {
+        "id": "E0109",
+        "from": "N_S3_19",
+        "to": "N_S3_20",
+        "length": 14,
+        "routingZoneId": "Z_S3_19"
+      },
+      {
+        "id": "E0110",
+        "from": "N_S1_19",
+        "to": "N_S2_19",
+        "length": 22,
+        "routingZoneId": "Z_S2_19"
+      },
+      {
+        "id": "E0111",
+        "from": "N_S2_19",
+        "to": "N_S3_19",
+        "length": 24,
+        "routingZoneId": "Z_S3_19"
+      },
+      {
+        "id": "E0112",
+        "from": "N_S1_20",
+        "to": "N_S1_21",
+        "length": 8,
+        "routingZoneId": "Z_S1_20"
+      },
+      {
+        "id": "E0113",
+        "from": "N_S2_20",
+        "to": "N_S2_21",
+        "length": 11,
+        "routingZoneId": "Z_S2_20"
+      },
+      {
+        "id": "E0114",
+        "from": "N_S3_20",
+        "to": "N_S3_21",
+        "length": 14,
+        "routingZoneId": "Z_S3_20"
+      },
+      {
+        "id": "E0115",
+        "from": "N_S1_20",
+        "to": "N_S2_20",
+        "length": 22,
+        "routingZoneId": "Z_S2_20"
+      },
+      {
+        "id": "E0116",
+        "from": "N_S2_20",
+        "to": "N_S3_20",
+        "length": 24,
+        "routingZoneId": "Z_S3_20"
+      },
+      {
+        "id": "E0117",
+        "from": "N_S1_21",
+        "to": "N_S1_22",
+        "length": 8,
+        "routingZoneId": "Z_S1_21"
+      },
+      {
+        "id": "E0118",
+        "from": "N_S2_21",
+        "to": "N_S2_22",
+        "length": 11,
+        "routingZoneId": "Z_S2_21"
+      },
+      {
+        "id": "E0119",
+        "from": "N_S3_21",
+        "to": "N_S3_22",
+        "length": 14,
+        "routingZoneId": "Z_S3_21"
+      },
+      {
+        "id": "E0120",
+        "from": "N_S1_21",
+        "to": "N_S2_21",
+        "length": 22,
+        "routingZoneId": "Z_S2_21"
+      },
+      {
+        "id": "E0121",
+        "from": "N_S2_21",
+        "to": "N_S3_21",
+        "length": 24,
+        "routingZoneId": "Z_S3_21"
+      },
+      {
+        "id": "E0122",
+        "from": "N_S1_22",
+        "to": "N_S1_23",
+        "length": 8,
+        "routingZoneId": "Z_S1_22"
+      },
+      {
+        "id": "E0123",
+        "from": "N_S2_22",
+        "to": "N_S2_23",
+        "length": 11,
+        "routingZoneId": "Z_S2_22"
+      },
+      {
+        "id": "E0124",
+        "from": "N_S3_22",
+        "to": "N_S3_23",
+        "length": 14,
+        "routingZoneId": "Z_S3_22"
+      },
+      {
+        "id": "E0125",
+        "from": "N_S1_22",
+        "to": "N_S2_22",
+        "length": 22,
+        "routingZoneId": "Z_S2_22"
+      },
+      {
+        "id": "E0126",
+        "from": "N_S2_22",
+        "to": "N_S3_22",
+        "length": 24,
+        "routingZoneId": "Z_S3_22"
+      },
+      {
+        "id": "E0127",
+        "from": "N_S1_23",
+        "to": "N_S1_24",
+        "length": 8,
+        "routingZoneId": "Z_S1_23"
+      },
+      {
+        "id": "E0128",
+        "from": "N_S2_23",
+        "to": "N_S2_24",
+        "length": 11,
+        "routingZoneId": "Z_S2_23"
+      },
+      {
+        "id": "E0129",
+        "from": "N_S3_23",
+        "to": "N_S3_24",
+        "length": 14,
+        "routingZoneId": "Z_S3_23"
+      },
+      {
+        "id": "E0130",
+        "from": "N_S1_23",
+        "to": "N_S2_23",
+        "length": 22,
+        "routingZoneId": "Z_S2_23"
+      },
+      {
+        "id": "E0131",
+        "from": "N_S2_23",
+        "to": "N_S3_23",
+        "length": 24,
+        "routingZoneId": "Z_S3_23"
+      },
+      {
+        "id": "E0132",
+        "from": "N_S1_24",
+        "to": "N_S1_25",
+        "length": 8,
+        "routingZoneId": "Z_S1_24"
+      },
+      {
+        "id": "E0133",
+        "from": "N_S2_24",
+        "to": "N_S2_25",
+        "length": 11,
+        "routingZoneId": "Z_S2_24"
+      },
+      {
+        "id": "E0134",
+        "from": "N_S3_24",
+        "to": "N_S3_25",
+        "length": 14,
+        "routingZoneId": "Z_S3_24"
+      },
+      {
+        "id": "E0135",
+        "from": "N_S1_24",
+        "to": "N_S2_24",
+        "length": 22,
+        "routingZoneId": "Z_S2_24"
+      },
+      {
+        "id": "E0136",
+        "from": "N_S2_24",
+        "to": "N_S3_24",
+        "length": 24,
+        "routingZoneId": "Z_S3_24"
+      },
+      {
+        "id": "E0137",
+        "from": "N_S1_25",
+        "to": "N_S1_26",
+        "length": 8,
+        "routingZoneId": "Z_S1_25"
+      },
+      {
+        "id": "E0138",
+        "from": "N_S2_25",
+        "to": "N_S2_26",
+        "length": 11,
+        "routingZoneId": "Z_S2_25"
+      },
+      {
+        "id": "E0139",
+        "from": "N_S3_25",
+        "to": "N_S3_26",
+        "length": 14,
+        "routingZoneId": "Z_S3_25"
+      },
+      {
+        "id": "E0140",
+        "from": "N_S1_25",
+        "to": "N_S2_25",
+        "length": 22,
+        "routingZoneId": "Z_S2_25"
+      },
+      {
+        "id": "E0141",
+        "from": "N_S2_25",
+        "to": "N_S3_25",
+        "length": 24,
+        "routingZoneId": "Z_S3_25"
+      },
+      {
+        "id": "E0142",
+        "from": "N_S1_26",
+        "to": "N_S1_27",
+        "length": 8,
+        "routingZoneId": "Z_S1_26"
+      },
+      {
+        "id": "E0143",
+        "from": "N_S2_26",
+        "to": "N_S2_27",
+        "length": 11,
+        "routingZoneId": "Z_S2_26"
+      },
+      {
+        "id": "E0144",
+        "from": "N_S3_26",
+        "to": "N_S3_27",
+        "length": 14,
+        "routingZoneId": "Z_S3_26"
+      },
+      {
+        "id": "E0145",
+        "from": "N_S1_26",
+        "to": "N_S2_26",
+        "length": 22,
+        "routingZoneId": "Z_S2_26"
+      },
+      {
+        "id": "E0146",
+        "from": "N_S2_26",
+        "to": "N_S3_26",
+        "length": 24,
+        "routingZoneId": "Z_S3_26"
+      },
+      {
+        "id": "E0147",
+        "from": "N_S1_27",
+        "to": "N_S1_28",
+        "length": 8,
+        "routingZoneId": "Z_S1_27"
+      },
+      {
+        "id": "E0148",
+        "from": "N_S2_27",
+        "to": "N_S2_28",
+        "length": 11,
+        "routingZoneId": "Z_S2_27"
+      },
+      {
+        "id": "E0149",
+        "from": "N_S3_27",
+        "to": "N_S3_28",
+        "length": 14,
+        "routingZoneId": "Z_S3_27"
+      },
+      {
+        "id": "E0150",
+        "from": "N_S1_27",
+        "to": "N_S2_27",
+        "length": 22,
+        "routingZoneId": "Z_S2_27"
+      },
+      {
+        "id": "E0151",
+        "from": "N_S2_27",
+        "to": "N_S3_27",
+        "length": 24,
+        "routingZoneId": "Z_S3_27"
+      },
+      {
+        "id": "E0152",
+        "from": "N_S1_28",
+        "to": "N_S1_29",
+        "length": 8,
+        "routingZoneId": "Z_S1_28"
+      },
+      {
+        "id": "E0153",
+        "from": "N_S2_28",
+        "to": "N_S2_29",
+        "length": 11,
+        "routingZoneId": "Z_S2_28"
+      },
+      {
+        "id": "E0154",
+        "from": "N_S3_28",
+        "to": "N_S3_29",
+        "length": 14,
+        "routingZoneId": "Z_S3_28"
+      },
+      {
+        "id": "E0155",
+        "from": "N_S1_28",
+        "to": "N_S2_28",
+        "length": 22,
+        "routingZoneId": "Z_S2_28"
+      },
+      {
+        "id": "E0156",
+        "from": "N_S2_28",
+        "to": "N_S3_28",
+        "length": 24,
+        "routingZoneId": "Z_S3_28"
+      },
+      {
+        "id": "E0157",
+        "from": "N_S1_29",
+        "to": "N_S1_30",
+        "length": 8,
+        "routingZoneId": "Z_S1_29"
+      },
+      {
+        "id": "E0158",
+        "from": "N_S2_29",
+        "to": "N_S2_30",
+        "length": 11,
+        "routingZoneId": "Z_S2_29"
+      },
+      {
+        "id": "E0159",
+        "from": "N_S3_29",
+        "to": "N_S3_30",
+        "length": 14,
+        "routingZoneId": "Z_S3_29"
+      },
+      {
+        "id": "E0160",
+        "from": "N_S1_29",
+        "to": "N_S2_29",
+        "length": 22,
+        "routingZoneId": "Z_S2_29"
+      },
+      {
+        "id": "E0161",
+        "from": "N_S2_29",
+        "to": "N_S3_29",
+        "length": 24,
+        "routingZoneId": "Z_S3_29"
+      },
+      {
+        "id": "E0162",
+        "from": "N_S1_30",
+        "to": "N_S1_31",
+        "length": 8,
+        "routingZoneId": "Z_S1_30"
+      },
+      {
+        "id": "E0163",
+        "from": "N_S2_30",
+        "to": "N_S2_31",
+        "length": 11,
+        "routingZoneId": "Z_S2_30"
+      },
+      {
+        "id": "E0164",
+        "from": "N_S3_30",
+        "to": "N_S3_31",
+        "length": 14,
+        "routingZoneId": "Z_S3_30"
+      },
+      {
+        "id": "E0165",
+        "from": "N_S1_30",
+        "to": "N_S2_30",
+        "length": 22,
+        "routingZoneId": "Z_S2_30"
+      },
+      {
+        "id": "E0166",
+        "from": "N_S2_30",
+        "to": "N_S3_30",
+        "length": 24,
+        "routingZoneId": "Z_S3_30"
+      },
+      {
+        "id": "E0167",
+        "from": "N_S1_31",
+        "to": "N_S1_32",
+        "length": 8,
+        "routingZoneId": "Z_S1_31"
+      },
+      {
+        "id": "E0168",
+        "from": "N_S2_31",
+        "to": "N_S2_32",
+        "length": 11,
+        "routingZoneId": "Z_S2_31"
+      },
+      {
+        "id": "E0169",
+        "from": "N_S3_31",
+        "to": "N_S3_32",
+        "length": 14,
+        "routingZoneId": "Z_S3_31"
+      },
+      {
+        "id": "E0170",
+        "from": "N_S1_31",
+        "to": "N_S2_31",
+        "length": 22,
+        "routingZoneId": "Z_S2_31"
+      },
+      {
+        "id": "E0171",
+        "from": "N_S2_31",
+        "to": "N_S3_31",
+        "length": 24,
+        "routingZoneId": "Z_S3_31"
+      },
+      {
+        "id": "E0172",
+        "from": "N_S1_32",
+        "to": "N_S1_33",
+        "length": 8,
+        "routingZoneId": "Z_S1_32"
+      },
+      {
+        "id": "E0173",
+        "from": "N_S2_32",
+        "to": "N_S2_33",
+        "length": 11,
+        "routingZoneId": "Z_S2_32"
+      },
+      {
+        "id": "E0174",
+        "from": "N_S3_32",
+        "to": "N_S3_33",
+        "length": 14,
+        "routingZoneId": "Z_S3_32"
+      },
+      {
+        "id": "E0175",
+        "from": "N_S1_32",
+        "to": "N_S2_32",
+        "length": 22,
+        "routingZoneId": "Z_S2_32"
+      },
+      {
+        "id": "E0176",
+        "from": "N_S2_32",
+        "to": "N_S3_32",
+        "length": 24,
+        "routingZoneId": "Z_S3_32"
+      },
+      {
+        "id": "E0177",
+        "from": "N_S1_33",
+        "to": "N_S1_34",
+        "length": 8,
+        "routingZoneId": "Z_S1_33"
+      },
+      {
+        "id": "E0178",
+        "from": "N_S2_33",
+        "to": "N_S2_34",
+        "length": 11,
+        "routingZoneId": "Z_S2_33"
+      },
+      {
+        "id": "E0179",
+        "from": "N_S3_33",
+        "to": "N_S3_34",
+        "length": 14,
+        "routingZoneId": "Z_S3_33"
+      },
+      {
+        "id": "E0180",
+        "from": "N_S1_33",
+        "to": "N_S2_33",
+        "length": 22,
+        "routingZoneId": "Z_S2_33"
+      },
+      {
+        "id": "E0181",
+        "from": "N_S2_33",
+        "to": "N_S3_33",
+        "length": 24,
+        "routingZoneId": "Z_S3_33"
+      },
+      {
+        "id": "E0182",
+        "from": "N_S1_34",
+        "to": "N_S1_35",
+        "length": 8,
+        "routingZoneId": "Z_S1_34"
+      },
+      {
+        "id": "E0183",
+        "from": "N_S2_34",
+        "to": "N_S2_35",
+        "length": 11,
+        "routingZoneId": "Z_S2_34"
+      },
+      {
+        "id": "E0184",
+        "from": "N_S3_34",
+        "to": "N_S3_35",
+        "length": 14,
+        "routingZoneId": "Z_S3_34"
+      },
+      {
+        "id": "E0185",
+        "from": "N_S1_34",
+        "to": "N_S2_34",
+        "length": 22,
+        "routingZoneId": "Z_S2_34"
+      },
+      {
+        "id": "E0186",
+        "from": "N_S2_34",
+        "to": "N_S3_34",
+        "length": 24,
+        "routingZoneId": "Z_S3_34"
+      },
+      {
+        "id": "E0187",
+        "from": "N_S1_35",
+        "to": "N_S1_36",
+        "length": 8,
+        "routingZoneId": "Z_S1_35"
+      },
+      {
+        "id": "E0188",
+        "from": "N_S2_35",
+        "to": "N_S2_36",
+        "length": 11,
+        "routingZoneId": "Z_S2_35"
+      },
+      {
+        "id": "E0189",
+        "from": "N_S3_35",
+        "to": "N_S3_36",
+        "length": 14,
+        "routingZoneId": "Z_S3_35"
+      },
+      {
+        "id": "E0190",
+        "from": "N_S1_35",
+        "to": "N_S2_35",
+        "length": 22,
+        "routingZoneId": "Z_S2_35"
+      },
+      {
+        "id": "E0191",
+        "from": "N_S2_35",
+        "to": "N_S3_35",
+        "length": 24,
+        "routingZoneId": "Z_S3_35"
+      },
+      {
+        "id": "E0192",
+        "from": "N_S1_36",
+        "to": "N_S1_37",
+        "length": 8,
+        "routingZoneId": "Z_S1_36"
+      },
+      {
+        "id": "E0193",
+        "from": "N_S2_36",
+        "to": "N_S2_37",
+        "length": 11,
+        "routingZoneId": "Z_S2_36"
+      },
+      {
+        "id": "E0194",
+        "from": "N_S3_36",
+        "to": "N_S3_37",
+        "length": 14,
+        "routingZoneId": "Z_S3_36"
+      },
+      {
+        "id": "E0195",
+        "from": "N_S1_36",
+        "to": "N_S2_36",
+        "length": 22,
+        "routingZoneId": "Z_S2_36"
+      },
+      {
+        "id": "E0196",
+        "from": "N_S2_36",
+        "to": "N_S3_36",
+        "length": 24,
+        "routingZoneId": "Z_S3_36"
+      },
+      {
+        "id": "E0197",
+        "from": "N_S1_37",
+        "to": "N_S1_38",
+        "length": 8,
+        "routingZoneId": "Z_S1_37"
+      },
+      {
+        "id": "E0198",
+        "from": "N_S2_37",
+        "to": "N_S2_38",
+        "length": 11,
+        "routingZoneId": "Z_S2_37"
+      },
+      {
+        "id": "E0199",
+        "from": "N_S3_37",
+        "to": "N_S3_38",
+        "length": 14,
+        "routingZoneId": "Z_S3_37"
+      },
+      {
+        "id": "E0200",
+        "from": "N_S1_37",
+        "to": "N_S2_37",
+        "length": 22,
+        "routingZoneId": "Z_S2_37"
+      },
+      {
+        "id": "E0201",
+        "from": "N_S2_37",
+        "to": "N_S3_37",
+        "length": 24,
+        "routingZoneId": "Z_S3_37"
+      },
+      {
+        "id": "E0202",
+        "from": "N_S1_38",
+        "to": "N_S1_39",
+        "length": 8,
+        "routingZoneId": "Z_S1_38"
+      },
+      {
+        "id": "E0203",
+        "from": "N_S2_38",
+        "to": "N_S2_39",
+        "length": 11,
+        "routingZoneId": "Z_S2_38"
+      },
+      {
+        "id": "E0204",
+        "from": "N_S3_38",
+        "to": "N_S3_39",
+        "length": 14,
+        "routingZoneId": "Z_S3_38"
+      },
+      {
+        "id": "E0205",
+        "from": "N_S1_38",
+        "to": "N_S2_38",
+        "length": 22,
+        "routingZoneId": "Z_S2_38"
+      },
+      {
+        "id": "E0206",
+        "from": "N_S2_38",
+        "to": "N_S3_38",
+        "length": 24,
+        "routingZoneId": "Z_S3_38"
+      },
+      {
+        "id": "E0207",
+        "from": "N_S1_39",
+        "to": "N_S1_40",
+        "length": 8,
+        "routingZoneId": "Z_S1_39"
+      },
+      {
+        "id": "E0208",
+        "from": "N_S2_39",
+        "to": "N_S2_40",
+        "length": 11,
+        "routingZoneId": "Z_S2_39"
+      },
+      {
+        "id": "E0209",
+        "from": "N_S3_39",
+        "to": "N_S3_40",
+        "length": 14,
+        "routingZoneId": "Z_S3_39"
+      },
+      {
+        "id": "E0210",
+        "from": "N_S1_39",
+        "to": "N_S2_39",
+        "length": 22,
+        "routingZoneId": "Z_S2_39"
+      },
+      {
+        "id": "E0211",
+        "from": "N_S2_39",
+        "to": "N_S3_39",
+        "length": 24,
+        "routingZoneId": "Z_S3_39"
+      },
+      {
+        "id": "E0212",
+        "from": "N_S1_40",
+        "to": "N_S1_01",
+        "length": 8,
+        "routingZoneId": "Z_S1_40"
+      },
+      {
+        "id": "E0213",
+        "from": "N_S2_40",
+        "to": "N_S2_01",
+        "length": 11,
+        "routingZoneId": "Z_S2_40"
+      },
+      {
+        "id": "E0214",
+        "from": "N_S3_40",
+        "to": "N_S3_01",
+        "length": 14,
+        "routingZoneId": "Z_S3_40"
+      },
+      {
+        "id": "E0215",
+        "from": "N_S1_40",
+        "to": "N_S2_40",
+        "length": 22,
+        "routingZoneId": "Z_S2_40"
+      },
+      {
+        "id": "E0216",
+        "from": "N_S2_40",
+        "to": "N_S3_40",
+        "length": 24,
+        "routingZoneId": "Z_S3_40"
+      },
+      {
+        "id": "E0217",
+        "from": "N_FLOOR_A",
+        "to": "N_S1_01",
+        "length": 25,
+        "routingZoneId": "Z_S1_01"
+      },
+      {
+        "id": "E0218",
+        "from": "N_FLOOR_B",
+        "to": "N_S1_06",
+        "length": 25,
+        "routingZoneId": "Z_S1_06"
+      },
+      {
+        "id": "E0219",
+        "from": "N_FLOOR_C",
+        "to": "N_S1_11",
+        "length": 25,
+        "routingZoneId": "Z_S1_11"
+      },
+      {
+        "id": "E0220",
+        "from": "N_FLOOR_D",
+        "to": "N_S1_16",
+        "length": 25,
+        "routingZoneId": "Z_S1_16"
+      },
+      {
+        "id": "E0221",
+        "from": "N_FLOOR_E",
+        "to": "N_S1_21",
+        "length": 25,
+        "routingZoneId": "Z_S1_21"
+      },
+      {
+        "id": "E0222",
+        "from": "N_FLOOR_F",
+        "to": "N_S1_26",
+        "length": 25,
+        "routingZoneId": "Z_S1_26"
+      },
+      {
+        "id": "E0223",
+        "from": "N_FLOOR_G",
+        "to": "N_S1_31",
+        "length": 25,
+        "routingZoneId": "Z_S1_31"
+      },
+      {
+        "id": "E0224",
+        "from": "N_FLOOR_H",
+        "to": "N_S1_36",
+        "length": 25,
+        "routingZoneId": "Z_S1_36"
+      },
+      {
+        "id": "E0225",
+        "from": "N_Z_NORTH_LINK",
+        "to": "N_S2_11",
+        "length": 12,
+        "routingZoneId": "Z_NORTH_LINK"
+      },
+      {
+        "id": "E0226",
+        "from": "N_Z_FIGHTER_WALK",
+        "to": "N_S2_06",
+        "length": 12,
+        "routingZoneId": "Z_FIGHTER_WALK"
+      },
+      {
+        "id": "E0227",
+        "from": "N_Z_EAST_LINK",
+        "to": "N_S2_21",
+        "length": 12,
+        "routingZoneId": "Z_EAST_LINK"
+      },
+      {
+        "id": "E0228",
+        "from": "N_Z_CHAMP_WALK",
+        "to": "N_S2_16",
+        "length": 12,
+        "routingZoneId": "Z_CHAMP_WALK"
+      },
+      {
+        "id": "E0229",
+        "from": "N_Z_SOUTH_LINK",
+        "to": "N_S2_31",
+        "length": 12,
+        "routingZoneId": "Z_SOUTH_LINK"
+      },
+      {
+        "id": "E0230",
+        "from": "N_Z_WEST_LINK",
+        "to": "N_S2_01",
+        "length": 12,
+        "routingZoneId": "Z_WEST_LINK"
+      },
+      {
+        "id": "E0231",
+        "from": "N_Z_NORTH_LINK",
+        "to": "N_Z_FIGHTER_WALK",
+        "length": 18,
+        "routingZoneId": "Z_FIGHTER_WALK"
+      },
+      {
+        "id": "E0232",
+        "from": "N_Z_FIGHTER_WALK",
+        "to": "N_Z_EAST_LINK",
+        "length": 18,
+        "routingZoneId": "Z_EAST_LINK"
+      },
+      {
+        "id": "E0233",
+        "from": "N_Z_EAST_LINK",
+        "to": "N_Z_CHAMP_WALK",
+        "length": 18,
+        "routingZoneId": "Z_CHAMP_WALK"
+      },
+      {
+        "id": "E0234",
+        "from": "N_Z_CHAMP_WALK",
+        "to": "N_Z_SOUTH_LINK",
+        "length": 18,
+        "routingZoneId": "Z_SOUTH_LINK"
+      },
+      {
+        "id": "E0235",
+        "from": "N_Z_SOUTH_LINK",
+        "to": "N_Z_WEST_LINK",
+        "length": 18,
+        "routingZoneId": "Z_WEST_LINK"
+      },
+      {
+        "id": "E0236",
+        "from": "N_Z_WEST_LINK",
+        "to": "N_Z_NORTH_LINK",
+        "length": 18,
+        "routingZoneId": "Z_NORTH_LINK"
+      },
+      {
+        "id": "E0237",
+        "from": "N_Z_EAST_LINK",
+        "to": "EXIT_EAST",
+        "length": 40,
+        "routingZoneId": "Z_EXIT_EAST_ENTRANCE"
+      },
+      {
+        "id": "E0238",
+        "from": "N_Z_NORTH_LINK",
+        "to": "EXIT_NORTH",
+        "length": 40,
+        "routingZoneId": "Z_EXIT_NORTH_ENTRANCE"
+      },
+      {
+        "id": "E0239",
+        "from": "N_Z_WEST_LINK",
+        "to": "EXIT_PREMIER_WEST",
+        "length": 40,
+        "routingZoneId": "Z_EXIT_PREMIER_WEST"
+      },
+      {
+        "id": "E0240",
+        "from": "N_Z_SOUTH_LINK",
+        "to": "EXIT_PREMIER_ENTRANCE",
+        "length": 40,
+        "routingZoneId": "Z_EXIT_PREMIER_ENTRANCE"
+      }
     ]
   },
-
-  "exits": ["EXIT_E", "EXIT_W", "EXIT_N", "EXIT_S"]
+  "exits": [
+    "EXIT_EAST",
+    "EXIT_NORTH",
+    "EXIT_PREMIER_WEST",
+    "EXIT_PREMIER_ENTRANCE"
+  ]
 }
