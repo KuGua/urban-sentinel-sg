@@ -12,9 +12,18 @@ const POI_TYPES = [
 
 const BACKEND_BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
 const PLANNING_AREA_YEAR = process.env.REACT_APP_PLANNING_AREA_YEAR || '2019';
+const CROWD_DETAIL_ZOOM = 13.5;
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
 
 function normalizeText(value) {
   return String(value || '').toLowerCase();
+}
+
+function normalizeAreaName(value) {
+  return String(value || '').trim().toUpperCase();
 }
 
 function parseCoordinatePair(value) {
@@ -80,6 +89,7 @@ function extractPathsFromRecord(record) {
   if (directGeoJsonPaths.length > 0) {
     return directGeoJsonPaths;
   }
+
   const geometry = record?.GeoJSON?.geometry;
   const geometryType = normalizeText(geometry?.type);
   const geometryCoordinates = geometry?.coordinates;
@@ -156,11 +166,32 @@ function extractPathsFromRecord(record) {
   return paths;
 }
 
+function getPathCenter(path) {
+  if (!Array.isArray(path) || path.length === 0) return null;
+  let latSum = 0;
+  let lngSum = 0;
+  for (const point of path) {
+    latSum += point[0];
+    lngSum += point[1];
+  }
+  return [latSum / path.length, lngSum / path.length];
+}
+
+function crowdColor(score) {
+  if (score >= 0.85) return '#7f1d1d';
+  if (score >= 0.7) return '#b91c1c';
+  if (score >= 0.55) return '#dc2626';
+  if (score >= 0.4) return '#ef4444';
+  if (score >= 0.25) return '#f97316';
+  return '#f59e0b';
+}
+
 export default function StaffHome() {
   const [assistRequests, setAssistRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [poiStatus, setPoiStatus] = useState('Loading police, fire and hospital markers...');
   const [adminStatus, setAdminStatus] = useState('Loading planning area boundaries...');
+  const [crowdStatus, setCrowdStatus] = useState('Loading crowd heat from backend...');
   const wsRef = useRef(null);
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -214,6 +245,13 @@ export default function StaffHome() {
       poiLayers[poiType.key] = L.layerGroup().addTo(map);
     });
     const adminBoundaryLayer = L.layerGroup().addTo(map);
+    const crowdAreaLayer = L.layerGroup().addTo(map);
+    const crowdHeatLayer = L.layerGroup().addTo(map);
+
+    const crowdAreaScoreByName = new Map();
+    const crowdAreas = [];
+    let crowdHotspots = [];
+    let crowdHeatPoints = [];
 
     const toLatLng = (record) => {
       const lat = Number(record.LATITUDE || record.Latitude || record.lat);
@@ -228,6 +266,21 @@ export default function StaffHome() {
       record.BUILDING || record.SEARCHVAL || record.NAME || record.POSTAL || 'Unknown location';
 
     const getAddress = (record) => record.ADDRESS || record.ROAD_NAME || '';
+
+    const fetchBackendJson = async (url) => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        let detail = '';
+        try {
+          const json = await response.json();
+          detail = json?.error ? `: ${json.error}` : '';
+        } catch {
+          // no-op
+        }
+        throw new Error(`Backend request failed (${response.status})${detail}`);
+      }
+      return response.json();
+    };
 
     const fetchAllPages = async (searchVal) => {
       const results = [];
@@ -256,6 +309,76 @@ export default function StaffHome() {
         seen.add(key);
         return true;
       });
+    };
+
+    const estimateScoreByDistance = (center) => {
+      if (!center || crowdHotspots.length === 0) return 0.08;
+      let score = 0;
+      for (const hotspot of crowdHotspots) {
+        const distance = map.distance(center, [hotspot.lat, hotspot.lng]);
+        const influence = hotspot.intensity * Math.exp(-(distance * distance) / (2 * 2200 * 2200));
+        score += influence;
+      }
+      return clamp(score, 0, 1);
+    };
+
+    const resolveAreaScore = (areaName, center) => {
+      const key = normalizeAreaName(areaName);
+      const explicitScore = crowdAreaScoreByName.get(key);
+      if (Number.isFinite(explicitScore)) {
+        return explicitScore;
+      }
+      return estimateScoreByDistance(center);
+    };
+
+    const drawCrowdHeatLayer = () => {
+      crowdHeatLayer.clearLayers();
+      for (const point of crowdHeatPoints) {
+        const color = crowdColor(point.intensity);
+        L.circleMarker([point.lat, point.lng], {
+          radius: 2.5 + point.intensity * 6,
+          color,
+          fillColor: color,
+          fillOpacity: 0.22 + point.intensity * 0.35,
+          weight: 0
+        })
+          .bindTooltip(`Crowd: ${(point.intensity * 100).toFixed(0)}%`)
+          .addTo(crowdHeatLayer);
+      }
+    };
+
+    const drawCrowdAreaLayer = () => {
+      crowdAreaLayer.clearLayers();
+      for (const area of crowdAreas) {
+        const color = crowdColor(area.score);
+        L.polygon(area.path, {
+          color,
+          dashArray: '6 6',
+          weight: 1,
+          fillColor: color,
+          fillOpacity: 0.14 + area.score * 0.34
+        })
+          .bindTooltip(`${area.name}: crowd level ${(area.score * 100).toFixed(0)}%`)
+          .addTo(crowdAreaLayer);
+      }
+    };
+
+    const toggleCrowdViewByZoom = () => {
+      const zoom = map.getZoom();
+      const showHeat = zoom >= CROWD_DETAIL_ZOOM;
+      if (showHeat) {
+        if (!map.hasLayer(crowdHeatLayer)) map.addLayer(crowdHeatLayer);
+        if (map.hasLayer(crowdAreaLayer)) map.removeLayer(crowdAreaLayer);
+        setCrowdStatus((prev) =>
+          prev.startsWith('Failed') ? prev : 'Crowd detail mode: zoomed-in backend heat points.'
+        );
+      } else {
+        if (!map.hasLayer(crowdAreaLayer)) map.addLayer(crowdAreaLayer);
+        if (map.hasLayer(crowdHeatLayer)) map.removeLayer(crowdHeatLayer);
+        setCrowdStatus((prev) =>
+          prev.startsWith('Failed') ? prev : 'Crowd overview mode: zoomed-out area crowd alert.'
+        );
+      }
     };
 
     const loadPoiMarkers = async () => {
@@ -288,19 +411,54 @@ export default function StaffHome() {
       }
     };
 
-    const fetchBackendJson = async (url) => {
-      const response = await fetch(url);
-      if (!response.ok) {
-        let detail = '';
-        try {
-          const json = await response.json();
-          detail = json?.error ? `: ${json.error}` : '';
-        } catch {
-          // no-op
+    const loadCrowdHeat = async () => {
+      try {
+        const data = await fetchBackendJson(`${BACKEND_BASE_URL}/onemap/crowd-heat`);
+
+        const rawHotspots = Array.isArray(data?.hotspots) ? data.hotspots : [];
+        crowdHotspots = rawHotspots
+          .map((item) => ({
+            lat: Number(item.lat),
+            lng: Number(item.lng),
+            intensity: clamp(Number(item.intensity), 0, 1),
+            planningArea: String(item.planningArea || '')
+          }))
+          .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lng) && Number.isFinite(item.intensity));
+
+        const rawPoints = Array.isArray(data?.detailPoints) ? data.detailPoints : [];
+        crowdHeatPoints = rawPoints
+          .map((item) => ({
+            lat: Number(item.lat),
+            lng: Number(item.lng),
+            intensity: clamp(Number(item.intensity), 0, 1)
+          }))
+          .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lng) && Number.isFinite(item.intensity));
+
+        crowdAreaScoreByName.clear();
+        const rawAreaAlerts = Array.isArray(data?.areaAlerts) ? data.areaAlerts : [];
+        for (const area of rawAreaAlerts) {
+          const key = normalizeAreaName(area?.planningArea);
+          const score = clamp(Number(area?.score), 0, 1);
+          if (key && Number.isFinite(score)) {
+            crowdAreaScoreByName.set(key, score);
+          }
         }
-        throw new Error(`Backend OneMap proxy failed (${response.status})${detail}`);
+
+        for (const area of crowdAreas) {
+          area.score = resolveAreaScore(area.name, area.center);
+        }
+
+        drawCrowdHeatLayer();
+        drawCrowdAreaLayer();
+        toggleCrowdViewByZoom();
+
+        const profile = data?.context?.profile ? `, profile ${data.context.profile}` : '';
+        setCrowdStatus(
+          `Crowd heat loaded from backend (${crowdHeatPoints.length} detail points, ${crowdAreaScoreByName.size} area alerts${profile}).`
+        );
+      } catch (error) {
+        setCrowdStatus(`Failed to load crowd heat: ${error.message}`);
       }
-      return response.json();
     };
 
     const loadAdministrativeBoundaries = async () => {
@@ -312,18 +470,30 @@ export default function StaffHome() {
         const rows = Array.isArray(data?.SearchResults) ? data.SearchResults : [];
         for (const row of rows) {
           const paths = extractPathsFromRecord(row);
+          const areaName = row?.pln_area_n || 'Planning Area';
+
           for (const path of paths) {
             L.polygon(path, {
               color: '#367098',
               weight: 2,
               fillOpacity: 0.06
             })
-              .bindTooltip(row?.pln_area_n || 'Planning Area')
+              .bindTooltip(areaName)
               .addTo(adminBoundaryLayer);
+
+            const center = getPathCenter(path);
+            crowdAreas.push({
+              name: areaName,
+              path,
+              center,
+              score: resolveAreaScore(areaName, center)
+            });
             drawn += 1;
           }
         }
 
+        drawCrowdAreaLayer();
+        toggleCrowdViewByZoom();
         setAdminStatus(
           drawn > 0
             ? `Planning area boundaries loaded (${drawn} polygons, year ${PLANNING_AREA_YEAR}).`
@@ -334,11 +504,16 @@ export default function StaffHome() {
       }
     };
 
+    map.on('zoomend', toggleCrowdViewByZoom);
+    toggleCrowdViewByZoom();
+
     loadPoiMarkers();
     loadAdministrativeBoundaries();
+    loadCrowdHeat();
     mapRef.current = map;
 
     return () => {
+      map.off('zoomend', toggleCrowdViewByZoom);
       map.remove();
       mapRef.current = null;
     };
@@ -385,9 +560,12 @@ export default function StaffHome() {
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#dc2626' }} />Fire</span>
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#16a34a' }} />Hospital</span>
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#367098' }} />Administrative Boundary</span>
+            <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#b91c1c' }} />Crowd Alert (Zoom out)</span>
+            <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#f97316' }} />Crowd Heat (Zoom in)</span>
           </div>
           <p className="status-text">{poiStatus}</p>
           <p className="status-text">{adminStatus}</p>
+          <p className="status-text">{crowdStatus}</p>
           <p className="source-text">
             Powered by OneMap API (
             <a href="https://www.onemap.gov.sg/" target="_blank" rel="noreferrer">

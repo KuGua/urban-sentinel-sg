@@ -1,5 +1,4 @@
 import "dotenv/config";
-import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import http from "http";
@@ -19,6 +18,7 @@ import { WebSocketPublisher } from "../events/WebSocketPublisher";
 
 import mapData from "../data/map.json";
 import CONFIG from "./config";
+import { buildMockCrowdHeatSnapshot } from "./mock/crowdHeat";
 
 /* =====================================================
    App + Server
@@ -221,6 +221,16 @@ app.get("/onemap/planning-areas", async (req, res) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown OneMap error";
     res.status(502).json({ error: message });
+  }
+});
+
+app.get("/onemap/crowd-heat", (req, res) => {
+  try {
+    const snapshot = buildMockCrowdHeatSnapshot();
+    res.json(snapshot);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown crowd heat error";
+    res.status(500).json({ error: message });
   }
 });
 
