@@ -1,9 +1,17 @@
-import { AnalysisZoneRisk, RoutingZone, RoutingZoneRisk, Severity } from "@schema";
+import {
+  AnalysisZoneRisk,
+  RoutingZone,
+  RoutingZoneRisk,
+  Severity
+} from "@schema";
 
+/**
+ * Expand analysis-zone risk (EMA-based) to routing zones.
+ * Does NOT mix in local deltas. Risk remains perception-derived only.
+ */
 export function expandToRoutingZones(
   analysis: AnalysisZoneRisk[],
-  routingZones: RoutingZone[],
-  localDeltas: Record<string, number>
+  routingZones: RoutingZone[]
 ): RoutingZoneRisk[] {
 
   const byAZ: Record<string, AnalysisZoneRisk> =
@@ -12,10 +20,8 @@ export function expandToRoutingZones(
   return routingZones.map(rz => {
 
     const parent = byAZ[rz.parentAnalysisZoneId];
-    const baseRisk = parent?.risk ?? 0;
-    const delta = localDeltas[rz.id] ?? 0;
 
-    const risk = clamp01(baseRisk + delta);
+    const risk = clamp01(parent?.risk ?? 0);
 
     const severity: Severity =
       risk >= 0.8 ? "critical" :
@@ -26,12 +32,12 @@ export function expandToRoutingZones(
       parentAnalysisZoneId: rz.parentAnalysisZoneId,
       risk,
       severity,
-      localDelta: delta || undefined,
       conf: parent?.conf
     };
   });
 }
 
-function clamp01(x:number){
-  return Math.max(0, Math.min(1,x));
+function clamp01(x: number) {
+  if (Number.isNaN(x)) return 0;
+  return Math.max(0, Math.min(1, x));
 }
