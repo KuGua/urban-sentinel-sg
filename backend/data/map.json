@@ -10,26 +10,26 @@
       {
         "id": "EXIT_EAST",
         "name": "East Entrance",
-        "lat": 1.3008763,
-        "lng": 103.8743493
+        "lat": 1.3006399,
+        "lng": 103.8739887
       },
       {
         "id": "EXIT_NORTH",
         "name": "North Entrance",
-        "lat": 1.3009591,
-        "lng": 103.8742077
+        "lat": 1.3006399,
+        "lng": 103.8737503
       },
       {
         "id": "EXIT_PREMIER_WEST",
         "name": "Premier West",
-        "lat": 1.3006747,
-        "lng": 103.8738224
+        "lat": 1.3003959,
+        "lng": 103.87386
       },
       {
         "id": "EXIT_PREMIER_ENTRANCE",
         "name": "Premier Entrance",
-        "lat": 1.3003651,
-        "lng": 103.8741285
+        "lat": 1.3006399,
+        "lng": 103.8739887
       }
     ],
     "note": "Internal graph coordinates are local XY for routing simulation (not raw lat/lng)."
