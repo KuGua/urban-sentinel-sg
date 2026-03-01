@@ -11,6 +11,7 @@ const POI_TYPES = [
 ];
 
 const BACKEND_BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
+const DISPATCH_ENDPOINT = process.env.REACT_APP_DISPATCH_ENDPOINT || '/dispatch/request';
 const PLANNING_AREA_YEAR = process.env.REACT_APP_PLANNING_AREA_YEAR || '2019';
 const CROWD_DETAIL_ZOOM = 13.5;
 
@@ -186,6 +187,20 @@ function crowdColor(score) {
   return '#f59e0b';
 }
 
+function buildBackendUrl(endpoint) {
+  const normalizedEndpoint = String(endpoint || '').trim();
+  if (!normalizedEndpoint) {
+    return `${BACKEND_BASE_URL}/dispatch/request`;
+  }
+  if (/^https?:\/\//i.test(normalizedEndpoint)) {
+    return normalizedEndpoint;
+  }
+  if (normalizedEndpoint.startsWith('/')) {
+    return `${BACKEND_BASE_URL}${normalizedEndpoint}`;
+  }
+  return `${BACKEND_BASE_URL}/${normalizedEndpoint}`;
+}
+
 export default function StaffHome() {
   const [assistRequests, setAssistRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -198,9 +213,13 @@ export default function StaffHome() {
     generatedAt: null
   });
   const [systemStatus, setSystemStatus] = useState('Loading system metrics from backend...');
+  const [selectedPin, setSelectedPin] = useState(null);
+  const [dispatchStatus, setDispatchStatus] = useState('Click the map to pin a location.');
+  const [isDispatching, setIsDispatching] = useState(false);
   const wsRef = useRef(null);
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
+  const dispatchPinLayerRef = useRef(null);
 
   useEffect(() => {
     if (!localStorage.getItem('staffAuth')) {
@@ -292,6 +311,8 @@ export default function StaffHome() {
     const adminBoundaryLayer = L.layerGroup().addTo(map);
     const crowdAreaLayer = L.layerGroup().addTo(map);
     const crowdHeatLayer = L.layerGroup().addTo(map);
+    const dispatchPinLayer = L.layerGroup().addTo(map);
+    dispatchPinLayerRef.current = dispatchPinLayer;
 
     const crowdAreaScoreByName = new Map();
     const crowdAreas = [];
@@ -550,6 +571,27 @@ export default function StaffHome() {
     };
 
     map.on('zoomend', toggleCrowdViewByZoom);
+    map.on('click', (event) => {
+      const lat = Number(event.latlng?.lat);
+      const lng = Number(event.latlng?.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return;
+      }
+
+      dispatchPinLayer.clearLayers();
+      L.circleMarker([lat, lng], {
+        radius: 9,
+        color: '#183a4f',
+        fillColor: '#79bbcf',
+        fillOpacity: 0.95,
+        weight: 2
+      })
+        .bindTooltip(`Dispatch Pin (${lat.toFixed(5)}, ${lng.toFixed(5)})`)
+        .addTo(dispatchPinLayer);
+
+      setSelectedPin({ lat, lng });
+      setDispatchStatus(`Pin set at (${lat.toFixed(5)}, ${lng.toFixed(5)}).`);
+    });
     toggleCrowdViewByZoom();
 
     loadPoiMarkers();
@@ -559,10 +601,59 @@ export default function StaffHome() {
 
     return () => {
       map.off('zoomend', toggleCrowdViewByZoom);
+      map.off('click');
       map.remove();
       mapRef.current = null;
+      dispatchPinLayerRef.current = null;
     };
   }, []);
+
+  const handleDispatch = async (serviceType) => {
+    if (!selectedPin) {
+      setDispatchStatus('Please pin a location on the map first.');
+      return;
+    }
+
+    setIsDispatching(true);
+    setDispatchStatus('Sending dispatch request to backend...');
+
+    const payload = {
+      type: 'emergency_dispatch',
+      serviceType,
+      strategy: 'nearest_unit',
+      target: {
+        lat: selectedPin.lat,
+        lng: selectedPin.lng
+      },
+      requestedAt: new Date().toISOString(),
+      source: 'staff_home'
+    };
+
+    try {
+      const response = await fetch(buildBackendUrl(DISPATCH_ENDPOINT), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        let detail = '';
+        try {
+          const errorBody = await response.json();
+          detail = errorBody?.error ? `: ${errorBody.error}` : '';
+        } catch {
+          // no-op
+        }
+        throw new Error(`Backend request failed (${response.status})${detail}`);
+      }
+
+      setDispatchStatus(`Dispatch sent: nearest ${serviceType} requested.`);
+    } catch (error) {
+      setDispatchStatus(`Dispatch failed: ${error.message}`);
+    } finally {
+      setIsDispatching(false);
+    }
+  };
 
   const handleAccept = (requestId) => {
     wsRef.current?.send({
@@ -624,6 +715,39 @@ export default function StaffHome() {
                   ? new Date(systemMetrics.generatedAt).toLocaleTimeString()
                   : '--'}
               </p>
+              <div className="dispatch-panel">
+                <h4 className="dispatch-title">Emergency Dispatch</h4>
+                <p className="dispatch-text">
+                  Pin: {selectedPin ? `${selectedPin.lat.toFixed(5)}, ${selectedPin.lng.toFixed(5)}` : '--'}
+                </p>
+                <div className="dispatch-actions">
+                  <button
+                    type="button"
+                    className="dispatch-btn dispatch-police"
+                    disabled={!selectedPin || isDispatching}
+                    onClick={() => handleDispatch('police')}
+                  >
+                    Dispatch Nearest Police Unit
+                  </button>
+                  <button
+                    type="button"
+                    className="dispatch-btn dispatch-fire"
+                    disabled={!selectedPin || isDispatching}
+                    onClick={() => handleDispatch('firefighter')}
+                  >
+                    Dispatch Nearest Fire Crew
+                  </button>
+                  <button
+                    type="button"
+                    className="dispatch-btn dispatch-ambulance"
+                    disabled={!selectedPin || isDispatching}
+                    onClick={() => handleDispatch('ambulance')}
+                  >
+                    Dispatch Nearest Ambulance
+                  </button>
+                </div>
+                <p className="dispatch-text">{dispatchStatus}</p>
+              </div>
             </aside>
           </div>
           <div className="legend-row">
