@@ -1,14 +1,27 @@
-import { WsServerEvent, WsClientEvent } from '@/shared/schema';
+import { WsServerEvent, WsClientEvent } from "../schema";
+import { getWsBaseUrl } from "./config";
 
 export class WebSocketClient {
   private ws: WebSocket;
   private eventHandlers: Record<string, ((event: WsServerEvent) => void)[]> = {};
+  private pendingMessages: WsClientEvent[] = [];
 
   constructor() {
-    this.ws = new WebSocket('ws://localhost:8080');
+    this.ws = new WebSocket(getWsBaseUrl());
+    this.ws.onopen = () => {
+      for (const msg of this.pendingMessages) {
+        this.ws.send(JSON.stringify(msg));
+      }
+      this.pendingMessages = [];
+    };
+
     this.ws.onmessage = (event) => {
-      const data = JSON.parse(event.data) as WsServerEvent;
-      this.emit(data.type, data);
+      try {
+        const data = JSON.parse(event.data) as WsServerEvent;
+        this.emit(data.type, data);
+      } catch {
+        // Ignore malformed payloads to keep ws client alive.
+      }
     };
   }
 
@@ -27,6 +40,10 @@ export class WebSocketClient {
   }
 
   public send(event: WsClientEvent) {
-    this.ws.send(JSON.stringify(event));
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(event));
+      return;
+    }
+    this.pendingMessages.push(event);
   }
 }
