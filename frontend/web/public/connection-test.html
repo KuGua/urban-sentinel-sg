@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafeFlow 连接测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    input {
+      padding: 8px;
+      min-width: 260px;
+      font-size: 14px;
+    }
+    button {
+      padding: 8px 12px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+    }
+    #log {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+      height: 380px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+    .hint { color: #555; font-size: 13px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h1>SafeFlow 前后端连接测试</h1>
+  <div class="hint">默认后端地址是 <code>http://localhost:8080</code>，请先启动 backend。</div>
+
+  <div class="row">
+    <input id="httpBase" value="http://localhost:8080" />
+    <input id="wsBase" value="ws://localhost:8080" />
+    <button id="connectWs">连接 WS</button>
+    <button id="closeWs">断开 WS</button>
+  </div>
+
+  <div class="row">
+    <button id="testPerception">测试 /perception</button>
+    <button id="testIncident">测试 /incident</button>
+    <button id="testRoute">测试 /route</button>
+    <button id="clearLog">清空日志</button>
+  </div>
+
+  <div id="log"></div>
+
+  <script>
+    let ws = null;
+
+    const $ = (id) => document.getElementById(id);
+    const logEl = $("log");
+
+    function log(title, payload) {
+      const time = new Date().toISOString();
+      const body = payload === undefined ? "" : "\n" + JSON.stringify(payload, null, 2);
+      logEl.textContent += `[${time}] ${title}${body}\n\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    async function postJson(path, body) {
+      const base = $("httpBase").value.replace(/\/+$/, "");
+      const url = `${base}${path}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      let json = null;
+      try {
+        json = await res.json();
+      } catch (_) {}
+      return { ok: res.ok, status: res.status, json };
+    }
+
+    $("connectWs").onclick = () => {
+      const wsBase = $("wsBase").value.trim();
+      if (ws) ws.close();
+      ws = new WebSocket(wsBase);
+      ws.onopen = () => log("WS 已连接", { wsBase });
+      ws.onclose = () => log("WS 已断开");
+      ws.onerror = () => log("WS 错误");
+      ws.onmessage = (event) => {
+        try {
+          log("WS 收到消息", JSON.parse(event.data));
+        } catch {
+          log("WS 收到原始消息", event.data);
+        }
+      };
+    };
+
+    $("closeWs").onclick = () => {
+      if (ws) ws.close();
+      ws = null;
+    };
+
+    $("testPerception").onclick = async () => {
+      const payload = {
+        ts: Date.now(),
+        frameId: "test-frame-1",
+        zones: [
+          { zoneId: "AZ1", density: 0.32, anomaly: 0.12, conf: 0.9 },
+          { zoneId: "AZ2", density: 0.78, anomaly: 0.25, conf: 0.88 }
+        ]
+      };
+      log("请求 /perception", payload);
+      try {
+        const result = await postJson("/perception", payload);
+        log("响应 /perception", result);
+      } catch (e) {
+        log("请求 /perception 失败", { error: String(e) });
+      }
+    };
+
+    $("testIncident").onclick = async () => {
+      const payload = {
+        incidentId: "INC_TEST_1",
+        ts: Date.now(),
+        mapId: "mall_demo_v1",
+        type: "blocked_corridor",
+        severity: "warn",
+        loc: { zoneId: "Z2" },
+        routingImpact: { hazardPenalty: 0.2, affectedRoutingZoneIds: ["Z2"] },
+        status: "open"
+      };
+      log("请求 /incident", payload);
+      try {
+        const result = await postJson("/incident", payload);
+        log("响应 /incident", result);
+      } catch (e) {
+        log("请求 /incident 失败", { error: String(e) });
+      }
+    };
+
+    $("testRoute").onclick = async () => {
+      const payload = {
+        userId: "U_TEST_1",
+        fromNodeId: "N1",
+        toNodeId: "EXIT"
+      };
+      log("请求 /route", payload);
+      try {
+        const result = await postJson("/route", payload);
+        log("响应 /route", result);
+      } catch (e) {
+        log("请求 /route 失败", { error: String(e) });
+      }
+    };
+
+    $("clearLog").onclick = () => {
+      logEl.textContent = "";
+    };
+
+    log("测试页已加载");
+  </script>
+</body>
+</html>
