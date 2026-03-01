@@ -43,12 +43,68 @@
   font-size: 22px;
 }
 
+.map-and-system {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 12px;
+  align-items: stretch;
+}
+
 .map-box {
   height: 420px;
   width: 100%;
   border-radius: 10px;
   overflow: hidden;
   border: 2px solid #367098;
+}
+
+.system-panel {
+  border: 2px solid #367098;
+  border-radius: 10px;
+  background: rgba(212, 215, 209, 0.92);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.system-title {
+  margin: 0;
+  font-size: 18px;
+  color: #183a4f;
+}
+
+.system-metric-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.system-metric-card {
+  border: 1px solid #79bbcf;
+  border-radius: 10px;
+  background: rgba(121, 187, 207, 0.12);
+  padding: 10px;
+}
+
+.system-metric-label {
+  margin: 0;
+  font-size: 13px;
+  color: #2c5b82;
+}
+
+.system-metric-value {
+  margin: 6px 0 0;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: #183a4f;
+}
+
+.system-status {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #2c5b82;
 }
 
 .legend-row {
@@ -189,6 +245,10 @@
 @media (max-width: 768px) {
   .staff-title {
     font-size: 24px;
+  }
+
+  .map-and-system {
+    grid-template-columns: 1fr;
   }
 
   .map-box {

@@ -192,6 +192,12 @@ export default function StaffHome() {
   const [poiStatus, setPoiStatus] = useState('Loading police, fire and hospital markers...');
   const [adminStatus, setAdminStatus] = useState('Loading planning area boundaries...');
   const [crowdStatus, setCrowdStatus] = useState('Loading crowd heat from backend...');
+  const [systemMetrics, setSystemMetrics] = useState({
+    workingCameras: null,
+    totalUsers: null,
+    generatedAt: null
+  });
+  const [systemStatus, setSystemStatus] = useState('Loading system metrics from backend...');
   const wsRef = useRef(null);
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -217,6 +223,45 @@ export default function StaffHome() {
 
     return () => {
       ws.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchSystemMetrics = async () => {
+      try {
+        const response = await fetch(`${BACKEND_BASE_URL}/system/metrics`);
+        if (!response.ok) {
+          throw new Error(`Backend request failed (${response.status})`);
+        }
+        const data = await response.json();
+        if (isCancelled) return;
+
+        setSystemMetrics({
+          workingCameras: Number.isFinite(Number(data?.workingCameras))
+            ? Number(data.workingCameras)
+            : null,
+          totalUsers: Number.isFinite(Number(data?.totalUsers))
+            ? Number(data.totalUsers)
+            : null,
+          generatedAt: Number.isFinite(Number(data?.generatedAt))
+            ? Number(data.generatedAt)
+            : null
+        });
+        setSystemStatus('System metrics synced from backend.');
+      } catch (error) {
+        if (isCancelled) return;
+        setSystemStatus(`Failed to load system metrics: ${error.message}`);
+      }
+    };
+
+    fetchSystemMetrics();
+    const intervalId = window.setInterval(fetchSystemMetrics, 5000);
+
+    return () => {
+      isCancelled = true;
+      window.clearInterval(intervalId);
     };
   }, []);
 
@@ -554,7 +599,33 @@ export default function StaffHome() {
       <main className="staff-main">
         <section className="staff-panel">
           <h2 className="panel-title">Singapore Live Map</h2>
-          <div ref={mapContainerRef} className="map-box" />
+          <div className="map-and-system">
+            <div ref={mapContainerRef} className="map-box" />
+            <aside className="system-panel" aria-label="System Module">
+              <h3 className="system-title">System Module</h3>
+              <div className="system-metric-grid">
+                <div className="system-metric-card">
+                  <p className="system-metric-label">Working Cameras</p>
+                  <p className="system-metric-value">
+                    {systemMetrics.workingCameras ?? '--'}
+                  </p>
+                </div>
+                <div className="system-metric-card">
+                  <p className="system-metric-label">Total Users</p>
+                  <p className="system-metric-value">
+                    {systemMetrics.totalUsers ?? '--'}
+                  </p>
+                </div>
+              </div>
+              <p className="system-status">{systemStatus}</p>
+              <p className="system-status">
+                Last update:{' '}
+                {systemMetrics.generatedAt
+                  ? new Date(systemMetrics.generatedAt).toLocaleTimeString()
+                  : '--'}
+              </p>
+            </aside>
+          </div>
           <div className="legend-row">
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#2563eb' }} />Police</span>
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#dc2626' }} />Fire</span>
