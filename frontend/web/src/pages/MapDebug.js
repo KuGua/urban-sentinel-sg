@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import mapData from '../data/map.debug.json';
 import './MapDebug.css';
 
 const SVG_SIZE = 820;
-const DEFAULT_GOOGLE_EMBED = 'https://www.google.com/maps?q=1.30092,103.87418&z=19&output=embed';
-const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+const DEFAULT_ONEMAP_LINK = 'https://www.onemap.gov.sg/main/v2/?lat=1.30092&lng=103.87418&zoom=19';
 
 function zoneColor(zoneId) {
   if (!zoneId) return '#64748b';
@@ -22,10 +23,9 @@ export default function MapDebug() {
   const [zoom, setZoom] = useState(1);
   const [showLabels, setShowLabels] = useState(true);
   const [selectedNodeId, setSelectedNodeId] = useState('');
-  const [googleMapStatus, setGoogleMapStatus] = useState(GOOGLE_MAPS_API_KEY ? 'loading' : 'missing_key');
-  const googleMapRef = useRef(null);
-  const googleMapInstanceRef = useRef(null);
-  const googleMarkersRef = useRef([]);
+  const oneMapRef = useRef(null);
+  const oneMapInstanceRef = useRef(null);
+  const oneMapLayerRef = useRef(null);
 
   const { nodesById, edges, bounds, stats, affine, anchorLatLngByNodeId } = useMemo(() => {
     const nodes = Array.isArray(mapData?.graph?.nodes) ? mapData.graph.nodes : [];
@@ -220,90 +220,74 @@ export default function MapDebug() {
   const selectedNodeEstimatedLatLng = selectedPoint
     ? { lat: selectedPoint.lat, lng: selectedPoint.lng }
     : null;
-  const googleSelectedLink =
+  const oneMapSelectedLink =
     selectedNodeEstimatedLatLng &&
     Number.isFinite(selectedNodeEstimatedLatLng.lat) &&
     Number.isFinite(selectedNodeEstimatedLatLng.lng)
-      ? `https://www.google.com/maps?q=${selectedNodeEstimatedLatLng.lat.toFixed(7)},${selectedNodeEstimatedLatLng.lng.toFixed(7)}`
+      ? `https://www.onemap.gov.sg/main/v2/?lat=${selectedNodeEstimatedLatLng.lat.toFixed(7)}&lng=${selectedNodeEstimatedLatLng.lng.toFixed(7)}&zoom=19`
       : '';
 
   useEffect(() => {
-    if (!GOOGLE_MAPS_API_KEY || !googleMapRef.current || !projectedPoints.length) {
+    if (!oneMapRef.current) {
       return;
     }
 
-    const initGoogleMap = () => {
-      if (!window.google?.maps || !googleMapRef.current) {
-        setGoogleMapStatus('error');
-        return;
-      }
-
-      if (!googleMapInstanceRef.current) {
-        googleMapInstanceRef.current = new window.google.maps.Map(googleMapRef.current, {
-          center: { lat: 1.30092, lng: 103.87418 },
-          zoom: 19,
-          mapTypeId: 'satellite',
-          fullscreenControl: true,
-          streetViewControl: false
-        });
-      }
-
-      googleMarkersRef.current.forEach((m) => m.setMap(null));
-      googleMarkersRef.current = projectedPoints.map((p) => {
-        return new window.google.maps.Marker({
-          map: googleMapInstanceRef.current,
-          position: { lat: p.lat, lng: p.lng },
-          title: `${p.id} (${p.routingZoneId})`,
-          icon: p.isExit
-            ? {
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 5.5,
-                fillColor: '#ef4444',
-                fillOpacity: 1,
-                strokeColor: '#111827',
-                strokeWeight: 1
-              }
-            : {
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 3.5,
-                fillColor: '#0ea5e9',
-                fillOpacity: 0.95,
-                strokeColor: '#111827',
-                strokeWeight: 1
-              }
-        });
+    if (!oneMapInstanceRef.current) {
+      const map = L.map(oneMapRef.current, {
+        center: [1.30092, 103.87418],
+        zoom: 19,
+        minZoom: 12,
+        maxZoom: 20
       });
 
-      setGoogleMapStatus('ready');
-    };
+      L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Default_HD/{z}/{x}/{y}.png', {
+        attribution: 'Map data (c) OpenStreetMap contributors, OneMap, Singapore Land Authority',
+        maxNativeZoom: 20,
+        maxZoom: 20
+      }).addTo(map);
 
-    if (window.google?.maps) {
-      initGoogleMap();
+      const layer = L.layerGroup().addTo(map);
+      oneMapInstanceRef.current = map;
+      oneMapLayerRef.current = layer;
+    }
+
+    if (!oneMapLayerRef.current || !oneMapInstanceRef.current) {
       return;
     }
 
-    const existingScript = document.getElementById('google-maps-sdk');
-    if (existingScript) {
-      existingScript.addEventListener('load', initGoogleMap);
-      existingScript.addEventListener('error', () => setGoogleMapStatus('error'));
-      return () => {
-        existingScript.removeEventListener('load', initGoogleMap);
-      };
+    const layer = oneMapLayerRef.current;
+    const map = oneMapInstanceRef.current;
+    layer.clearLayers();
+
+    const latLngs = [];
+    for (const p of projectedPoints) {
+      const latLng = [p.lat, p.lng];
+      latLngs.push(latLng);
+      const marker = L.circleMarker(latLng, {
+        radius: p.isExit ? 7 : 4,
+        color: p.isExit ? '#111827' : '#0f172a',
+        fillColor: p.isExit ? '#ef4444' : '#0ea5e9',
+        fillOpacity: 0.95,
+        weight: 1
+      });
+      marker.bindTooltip(`${p.id} (${p.routingZoneId})`);
+      marker.addTo(layer);
     }
 
-    const script = document.createElement('script');
-    script.id = 'google-maps-sdk';
-    script.async = true;
-    script.defer = true;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
-    script.addEventListener('load', initGoogleMap);
-    script.addEventListener('error', () => setGoogleMapStatus('error'));
-    document.head.appendChild(script);
-
-    return () => {
-      script.removeEventListener('load', initGoogleMap);
-    };
+    if (latLngs.length > 0) {
+      map.fitBounds(latLngs, { padding: [28, 28], maxZoom: 19 });
+    }
   }, [projectedPoints]);
+
+  useEffect(() => {
+    return () => {
+      if (oneMapInstanceRef.current) {
+        oneMapInstanceRef.current.remove();
+        oneMapInstanceRef.current = null;
+        oneMapLayerRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div className="map-debug-page">
@@ -381,35 +365,13 @@ export default function MapDebug() {
           </div>
 
           <div className="map-debug-gmap-panel">
-            {GOOGLE_MAPS_API_KEY ? (
-              <div className="map-debug-gmap-live-wrap">
-                <div ref={googleMapRef} className="map-debug-gmap-live" />
-                {googleMapStatus !== 'ready' && (
-                  <div className="map-debug-gmap-overlay">
-                    Loading Google Map markers...
-                  </div>
-                )}
-              </div>
-            ) : (
-              <iframe
-                title="Google Map Compare"
-                className="map-debug-gmap"
-                src={DEFAULT_GOOGLE_EMBED}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            )}
+            <div className="map-debug-gmap-live-wrap">
+              <div ref={oneMapRef} className="map-debug-gmap-live" />
+            </div>
             <div className="map-debug-compare-card">
               <h3>Point-to-Point Compare</h3>
               <p>Click a node on the left map to estimate its real coordinate.</p>
-              {!GOOGLE_MAPS_API_KEY && (
-                <p className="map-debug-muted">
-                  To render all points directly on Google Map, set <code>REACT_APP_GOOGLE_MAPS_API_KEY</code>.
-                </p>
-              )}
-              {GOOGLE_MAPS_API_KEY && (
-                <p>Google point markers: <strong>{projectedPoints.length}</strong></p>
-              )}
+              <p>OneMap point markers: <strong>{projectedPoints.length}</strong></p>
               <p>Selected Node: <strong>{selectedNode?.id || '--'}</strong></p>
               <p>Zone: <strong>{selectedNode?.routingZoneId || '--'}</strong></p>
               <p>
@@ -421,13 +383,16 @@ export default function MapDebug() {
                 </strong>
               </p>
               <p>Coordinate Source: <strong>{selectedPointSource}</strong></p>
-              {googleSelectedLink ? (
-                <a href={googleSelectedLink} target="_blank" rel="noreferrer">
-                  Open Selected Point in Google Maps
+              {oneMapSelectedLink ? (
+                <a href={oneMapSelectedLink} target="_blank" rel="noreferrer">
+                  Open Selected Point in OneMap
                 </a>
               ) : (
                 <span className="map-debug-muted">Select a node first.</span>
               )}
+              <p className="map-debug-muted">
+                OneMap base: <a href={DEFAULT_ONEMAP_LINK} target="_blank" rel="noreferrer">Open stadium center</a>
+              </p>
             </div>
           </div>
         </section>
