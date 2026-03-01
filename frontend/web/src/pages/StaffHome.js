@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { WebSocketClient } from '../api/websocket';
+import './StaffHome.css';
 
 const POI_TYPES = [
   { key: 'police', label: 'Police Station', query: 'Police Station', color: '#2563eb' },
@@ -9,10 +10,93 @@ const POI_TYPES = [
   { key: 'hospital', label: 'Hospital', query: 'Hospital', color: '#16a34a' }
 ];
 
+const ONEMAP_TOKEN = process.env.REACT_APP_ONEMAP_API_TOKEN || '';
+
+const ADMIN_THEME_KEYWORDS = [
+  ['subzone', 'boundary'],
+  ['planning', 'area'],
+  ['region'],
+  ['constituency']
+];
+
+function normalizeText(value) {
+  return String(value || '').toLowerCase();
+}
+
+function themeMatches(theme, keywordGroup) {
+  const haystack = [
+    theme?.THEMENAME,
+    theme?.QUERYNAME,
+    theme?.CATEGORY,
+    theme?.ICON_NAME
+  ]
+    .map(normalizeText)
+    .join(' ');
+  return keywordGroup.every((keyword) => haystack.includes(keyword));
+}
+
+function pickAdminThemes(themeList) {
+  const picked = [];
+  for (const keywordGroup of ADMIN_THEME_KEYWORDS) {
+    const hit = themeList.find((theme) => themeMatches(theme, keywordGroup));
+    if (hit && !picked.find((item) => item.QUERYNAME === hit.QUERYNAME)) {
+      picked.push(hit);
+    }
+  }
+  return picked;
+}
+
+function parseCoordinatePair(value) {
+  if (!value || typeof value !== 'string') return null;
+  const parts = value.split(',').map((p) => Number(p.trim()));
+  if (parts.length < 2 || !Number.isFinite(parts[0]) || !Number.isFinite(parts[1])) {
+    return null;
+  }
+  return [parts[0], parts[1]];
+}
+
+function extractPathFromRecord(record) {
+  const pathSource =
+    record.LAT_LNG ||
+    record.LATLNG ||
+    record.LatLng ||
+    record.SHAPE ||
+    record.GEOMETRY ||
+    record.POLY ||
+    record.POLYGON;
+
+  if (!pathSource || typeof pathSource !== 'string') {
+    return null;
+  }
+
+  if (pathSource.includes('|')) {
+    const points = pathSource
+      .split('|')
+      .map(parseCoordinatePair)
+      .filter(Boolean);
+    return points.length >= 3 ? points : null;
+  }
+
+  const wktMatch = pathSource.match(/-?\d+(\.\d+)?\s+-?\d+(\.\d+)?/g);
+  if (wktMatch && wktMatch.length >= 3) {
+    const points = wktMatch
+      .map((pair) => {
+        const [lng, lat] = pair.split(/\s+/).map(Number);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        return [lat, lng];
+      })
+      .filter(Boolean);
+    return points.length >= 3 ? points : null;
+  }
+
+  return null;
+}
+
 export default function StaffHome() {
   const [assistRequests, setAssistRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [poiStatus, setPoiStatus] = useState('Loading police, fire and hospital markers...');
+  const [adminStatus, setAdminStatus] = useState('Loading administrative boundaries from OneMap themes...');
   const wsRef = useRef(null);
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -62,6 +146,7 @@ export default function StaffHome() {
     POI_TYPES.forEach((poiType) => {
       poiLayers[poiType.key] = L.layerGroup().addTo(map);
     });
+    const adminBoundaryLayer = L.layerGroup().addTo(map);
 
     const toLatLng = (record) => {
       const lat = Number(record.LATITUDE || record.Latitude || record.lat);
@@ -138,7 +223,71 @@ export default function StaffHome() {
       }
     };
 
+    const fetchWithAuth = async (url) => {
+      const response = await fetch(url, {
+        headers: ONEMAP_TOKEN ? { Authorization: `Bearer ${ONEMAP_TOKEN}` } : undefined
+      });
+      if (!response.ok) {
+        throw new Error(`OneMap themes API failed (${response.status})`);
+      }
+      return response.json();
+    };
+
+    const loadAdministrativeBoundaries = async () => {
+      if (!ONEMAP_TOKEN) {
+        setAdminStatus('Set REACT_APP_ONEMAP_API_TOKEN to enable OneMap administrative boundary layers.');
+        return;
+      }
+
+      try {
+        const allThemes = await fetchWithAuth(
+          'https://www.onemap.gov.sg/api/public/themesvc/getAllThemesInfo?moreInfo=Y'
+        );
+        const themeList = Array.isArray(allThemes?.Theme_Names) ? allThemes.Theme_Names : [];
+        const selectedThemes = pickAdminThemes(themeList);
+
+        if (!selectedThemes.length) {
+          setAdminStatus('No matching administrative themes found from OneMap.');
+          return;
+        }
+
+        let drawn = 0;
+        for (const theme of selectedThemes.slice(0, 3)) {
+          const themeName = theme.THEMENAME || theme.QUERYNAME;
+          const detail = await fetchWithAuth(
+            `https://www.onemap.gov.sg/api/public/themesvc/retrieveTheme?queryName=${encodeURIComponent(
+              theme.QUERYNAME
+            )}`
+          );
+          const rows = Array.isArray(detail?.SrchResults) ? detail.SrchResults : [];
+
+          for (const row of rows) {
+            const path = extractPathFromRecord(row);
+            if (path) {
+              L.polygon(path, {
+                color: '#367098',
+                weight: 2,
+                fillOpacity: 0.06
+              })
+                .bindTooltip(themeName)
+                .addTo(adminBoundaryLayer);
+              drawn += 1;
+            }
+          }
+        }
+
+        setAdminStatus(
+          drawn > 0
+            ? `Administrative boundaries loaded (${drawn} polygons).`
+            : 'Administrative themes loaded, but no polygon geometry was found in the response.'
+        );
+      } catch (error) {
+        setAdminStatus(`Failed to load administrative boundaries: ${error.message}`);
+      }
+    };
+
     loadPoiMarkers();
+    loadAdministrativeBoundaries();
     mapRef.current = map;
 
     return () => {
@@ -172,24 +321,26 @@ export default function StaffHome() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Staff Center</h1>
+    <div className="staff-page">
+      <header className="staff-header">
+        <div className="staff-header-inner">
+          <h1 className="staff-title">Staff Center</h1>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <section className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-3">Singapore Live Map</h2>
-          <div ref={mapContainerRef} style={{ height: '380px', width: '100%', borderRadius: '8px' }} />
-          <div className="mt-3 flex items-center gap-4 text-sm text-gray-700">
-            <span className="inline-flex items-center gap-2"><span style={{ width: '10px', height: '10px', borderRadius: '9999px', backgroundColor: '#2563eb', display: 'inline-block' }} />Police</span>
-            <span className="inline-flex items-center gap-2"><span style={{ width: '10px', height: '10px', borderRadius: '9999px', backgroundColor: '#dc2626', display: 'inline-block' }} />Fire</span>
-            <span className="inline-flex items-center gap-2"><span style={{ width: '10px', height: '10px', borderRadius: '9999px', backgroundColor: '#16a34a', display: 'inline-block' }} />Hospital</span>
+      <main className="staff-main">
+        <section className="staff-panel">
+          <h2 className="panel-title">Singapore Live Map</h2>
+          <div ref={mapContainerRef} className="map-box" />
+          <div className="legend-row">
+            <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#2563eb' }} />Police</span>
+            <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#dc2626' }} />Fire</span>
+            <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#16a34a' }} />Hospital</span>
+            <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#367098' }} />Administrative Boundary</span>
           </div>
-          <p className="mt-2 text-sm text-gray-600">{poiStatus}</p>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="status-text">{poiStatus}</p>
+          <p className="status-text">{adminStatus}</p>
+          <p className="source-text">
             Powered by OneMap API (
             <a href="https://www.onemap.gov.sg/" target="_blank" rel="noreferrer">
               onemap.gov.sg
@@ -199,43 +350,43 @@ export default function StaffHome() {
         </section>
 
         {isLoading ? (
-          <div className="text-center py-12">Loading...</div>
+          <div className="empty-state">Loading...</div>
         ) : assistRequests.length === 0 ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-semibold text-gray-900">No pending requests</h2>
-            <p className="mt-1 text-gray-500">Waiting for new assist requests...</p>
+          <div className="empty-state">
+            <h2>No pending requests</h2>
+            <p>Waiting for new assist requests...</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="request-list">
             {assistRequests.map((request) => (
-              <div key={request.requestId} className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Assist Request</h3>
+              <div key={request.requestId} className="request-card">
+                <div className="request-head">
+                  <h3>Assist Request</h3>
                   <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    className={`severity-badge ${
                       request.severity === 'critical'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                        ? 'severity-critical'
+                        : 'severity-warning'
                     }`}
                   >
                     {request.severity === 'critical' ? 'Critical' : 'Warning'}
                   </span>
                 </div>
 
-                <p className="mt-2 text-gray-600">
+                <p className="request-text">
                   {request.type === 'fall' ? 'Fall detected' : 'Abnormal zone'} at {request.zoneId}
                 </p>
 
-                <div className="mt-4 flex space-x-3">
+                <div className="request-actions">
                   <button
                     onClick={() => handleAccept(request.requestId)}
-                    className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-150"
+                    className="btn btn-accept"
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => handleDecline(request.requestId)}
-                    className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition duration-150"
+                    className="btn btn-decline"
                   >
                     Decline
                   </button>
