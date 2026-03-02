@@ -155,6 +155,37 @@ def zone_counts_from_density_map(
     return out
 
 
+def density_heatmap_overlay(
+    frame_bgr: np.ndarray,
+    density_map: np.ndarray,
+    *,
+    alpha: float = 0.32,
+    colormap: int = cv2.COLORMAP_JET,
+) -> np.ndarray:
+    """
+    Overlay LWCC density map on frame for visualization.
+    """
+    if frame_bgr is None or frame_bgr.ndim != 3:
+        return frame_bgr
+    if density_map is None:
+        return frame_bgr
+
+    h, w = frame_bgr.shape[:2]
+    dm = np.asarray(density_map, dtype=np.float32)
+    if dm.ndim != 2 or dm.size <= 0:
+        return frame_bgr
+    dm = np.maximum(dm, 0.0)
+    heat = cv2.resize(dm, (w, h), interpolation=cv2.INTER_CUBIC)
+    mx = float(heat.max())
+    if mx > 1e-8:
+        heat_u8 = np.clip(255.0 * (heat / mx), 0.0, 255.0).astype(np.uint8)
+    else:
+        heat_u8 = np.zeros((h, w), dtype=np.uint8)
+    heat_color = cv2.applyColorMap(heat_u8, colormap)
+    a = float(max(0.0, min(1.0, alpha)))
+    return cv2.addWeighted(frame_bgr, 1.0 - a, heat_color, a, 0.0)
+
+
 class LWCCCrowdDetector:
     def __init__(
         self,

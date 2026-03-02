@@ -16,7 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from ml.detector import YoloV8HeadVehicleDetector, YoloV8SplitHeadVehicleDetector
-from ml.lwcc import LWCCCrowdDetector, zone_counts_from_density_map
+from ml.lwcc import LWCCCrowdDetector, density_heatmap_overlay, zone_counts_from_density_map
 from ml.features import aggregate_detections_by_zone
 from ml.preprocess import preprocess_frame
 from ml.roi_density import DensityConfig, ROIDensityEstimator, parse_roi_string
@@ -303,6 +303,10 @@ def main() -> None:
                 vehicles_by_zone=vehicle_counts,
                 heads_by_zone=head_counts,
             )
+            if backend in {"lwcc", "hybrid"}:
+                density_map = last_lwcc_aux.get("density_map")
+                if isinstance(density_map, np.ndarray) and density_map.ndim == 2 and density_map.size > 0:
+                    vis = density_heatmap_overlay(vis, density_map, alpha=0.32)
             _draw_detections(vis, zones, detections)
 
             density_metrics = None

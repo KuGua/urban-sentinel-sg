@@ -69,6 +69,26 @@ type MlVehicleInferResponse = {
   imageWidth?: number;
   imageHeight?: number;
   vehicleCount: number;
+  peopleCount?: number;
+  estimatedAreaM2?: number | null;
+  densityM2?: number | null;
+  riskLevel?: string;
+  riskScore?: number;
+  yoloPeopleCount?: number;
+  yoloHeadCount?: number;
+  yoloPeopleDetections?: Array<{ bbox: [number, number, number, number] }>;
+  yoloHeadDetections?: Array<{ bbox: [number, number, number, number] }>;
+  populationDensity?: {
+    peopleCount?: number;
+    estimatedAreaM2?: number | null;
+    densityM2?: number | null;
+    riskLevel?: string;
+    riskScore?: number;
+    yoloPeopleCount?: number;
+    yoloHeadCount?: number;
+    yoloPeopleDetections?: Array<{ bbox: [number, number, number, number] }>;
+    yoloHeadDetections?: Array<{ bbox: [number, number, number, number] }>;
+  };
   detections: Array<{
     bbox: [number, number, number, number];
     conf: number;
@@ -512,6 +532,27 @@ app.get("/traffic/cameras/enriched", async (req, res) => {
             inference: {
               status: "ok",
               vehicleCount: infer.vehicleCount,
+              peopleCount: Number.isFinite(Number(infer.peopleCount)) ? Number(infer.peopleCount) : undefined,
+              estimatedAreaM2: Number.isFinite(Number(infer.estimatedAreaM2))
+                ? Number(infer.estimatedAreaM2)
+                : undefined,
+              densityM2: Number.isFinite(Number(infer.densityM2)) ? Number(infer.densityM2) : undefined,
+              riskLevel: typeof infer.riskLevel === "string" ? infer.riskLevel : undefined,
+              riskScore: Number.isFinite(Number(infer.riskScore)) ? Number(infer.riskScore) : undefined,
+              yoloPeopleCount: Number.isFinite(Number(infer.yoloPeopleCount))
+                ? Number(infer.yoloPeopleCount)
+                : undefined,
+              yoloHeadCount: Number.isFinite(Number(infer.yoloHeadCount)) ? Number(infer.yoloHeadCount) : undefined,
+              yoloPeopleDetections: Array.isArray(infer.yoloPeopleDetections)
+                ? infer.yoloPeopleDetections
+                : undefined,
+              yoloHeadDetections: Array.isArray(infer.yoloHeadDetections)
+                ? infer.yoloHeadDetections
+                : undefined,
+              populationDensity:
+                infer.populationDensity && typeof infer.populationDensity === "object"
+                  ? infer.populationDensity
+                  : undefined,
               model: infer.model,
               ts: infer.ts,
               imageWidth: Number.isFinite(Number(infer.imageWidth)) ? Number(infer.imageWidth) : undefined,
