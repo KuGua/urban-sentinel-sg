@@ -13,6 +13,8 @@ export const HTTP_ENDPOINTS = {
   incident: "/incident",
   mockRisk: "/mock-risk",
   mockIncident: "/mock-incident",
+  trafficCameras: "/traffic/cameras",
+  trafficCamerasEnriched: "/traffic/cameras/enriched",
 } as const;
 
 export type GlobalMode = "normal" | "alert" | "evacuation";

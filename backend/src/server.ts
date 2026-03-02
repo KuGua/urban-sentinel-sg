@@ -34,6 +34,84 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(cors());
 
+const ML_SERVICE_BASE_URL = (process.env.ML_SERVICE_BASE_URL || "http://127.0.0.1:8099").replace(/\/+$/, "");
+const TRAFFIC_ML_ENDPOINT = `${ML_SERVICE_BASE_URL}/infer/traffic-camera`;
+
+type TrafficCameraRaw = {
+  camera_id?: string;
+  image?: string;
+  timestamp?: string;
+  location?: {
+    latitude?: number;
+    longitude?: number;
+  };
+};
+
+type TrafficImagesResponse = {
+  items?: Array<{
+    timestamp?: string;
+    cameras?: TrafficCameraRaw[];
+  }>;
+};
+
+type MlVehicleInferRequest = {
+  cameraId: string;
+  imageUrl?: string;
+  imageBase64: string;
+  capturedAt?: string;
+};
+
+type MlVehicleInferResponse = {
+  cameraId: string;
+  model: string;
+  ts: number;
+  imageWidth?: number;
+  imageHeight?: number;
+  vehicleCount: number;
+  detections: Array<{
+    bbox: [number, number, number, number];
+    conf: number;
+    className: string;
+  }>;
+};
+
+const trafficInferCache = new Map<string, { expiresAt: number; value: MlVehicleInferResponse }>();
+
+async function fetchImageAsDataUrl(url: string): Promise<string> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Image fetch failed (${response.status})`);
+  }
+  const contentType = response.headers.get("content-type") || "image/jpeg";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return `data:${contentType};base64,${buffer.toString("base64")}`;
+}
+
+async function inferTrafficCamera(
+  payload: MlVehicleInferRequest,
+  cacheTtlMs: number
+): Promise<MlVehicleInferResponse> {
+  const cacheKey = `${payload.cameraId}:${payload.capturedAt || ""}`;
+  const now = Date.now();
+  const cached = trafficInferCache.get(cacheKey);
+  if (cached && cached.expiresAt > now) {
+    return cached.value;
+  }
+
+  const response = await fetch(TRAFFIC_ML_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`ML infer failed (${response.status}): ${text.slice(0, 180)}`);
+  }
+  const data = (await response.json()) as MlVehicleInferResponse;
+  trafficInferCache.set(cacheKey, { expiresAt: now + cacheTtlMs, value: data });
+  return data;
+}
+
 function getOneMapToken(): string {
   const token = process.env.ONEMAP_API_TOKEN;
   if (!token) {
@@ -235,6 +313,101 @@ app.get("/onemap/crowd-heat", (req, res) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown crowd heat error";
     res.status(500).json({ error: message });
+  }
+});
+
+app.get("/traffic/cameras", async (_req, res) => {
+  try {
+    const data = await fetchOneMapPublicJson<unknown>(
+      "https://api.data.gov.sg/v1/transport/traffic-images"
+    );
+    res.json(data);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown traffic camera error";
+    res.status(502).json({ error: message });
+  }
+});
+
+app.get("/traffic/cameras/enriched", async (req, res) => {
+  try {
+    const maxCameras = Math.max(1, Math.min(30, Number(req.query.maxCameras ?? 8) || 8));
+    const withInfer = String(req.query.withInfer ?? "1") !== "0";
+    const cacheTtlMs = Math.max(1000, Number(req.query.cacheTtlMs ?? 45000) || 45000);
+
+    const upstream = await fetchOneMapPublicJson<TrafficImagesResponse>(
+      "https://api.data.gov.sg/v1/transport/traffic-images"
+    );
+    const latestItem = Array.isArray(upstream?.items) && upstream.items.length > 0 ? upstream.items[0] : null;
+    const cameras = (latestItem?.cameras || []).slice(0, maxCameras);
+
+    const enriched = await Promise.all(
+      cameras.map(async (camera) => {
+        const cameraId = String(camera?.camera_id || "").trim();
+        const imageUrl = String(camera?.image || "").trim();
+        const capturedAt = String(camera?.timestamp || latestItem?.timestamp || "");
+        const lat = Number(camera?.location?.latitude);
+        const lng = Number(camera?.location?.longitude);
+
+        if (!cameraId || !imageUrl || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+          return null;
+        }
+
+        if (!withInfer) {
+          return {
+            cameraId,
+            lat,
+            lng,
+            imageUrl,
+            capturedAt,
+            inference: { status: "skipped", reason: "withInfer=0" },
+          };
+        }
+
+        try {
+          const imageBase64 = await fetchImageAsDataUrl(imageUrl);
+          const infer = await inferTrafficCamera(
+            { cameraId, imageUrl, imageBase64, capturedAt },
+            cacheTtlMs
+          );
+          return {
+            cameraId,
+            lat,
+            lng,
+            imageUrl,
+            capturedAt,
+            inference: {
+              status: "ok",
+              vehicleCount: infer.vehicleCount,
+              model: infer.model,
+              ts: infer.ts,
+              imageWidth: Number.isFinite(Number(infer.imageWidth)) ? Number(infer.imageWidth) : undefined,
+              imageHeight: Number.isFinite(Number(infer.imageHeight)) ? Number(infer.imageHeight) : undefined,
+              detections: infer.detections,
+            },
+          };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown ML infer error";
+          return {
+            cameraId,
+            lat,
+            lng,
+            imageUrl,
+            capturedAt,
+            inference: { status: "error", error: message },
+          };
+        }
+      })
+    );
+
+    res.json({
+      generatedAt: new Date().toISOString(),
+      source: "data.gov.sg",
+      modelService: TRAFFIC_ML_ENDPOINT,
+      cameras: enriched.filter(Boolean),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown enriched camera error";
+    res.status(502).json({ error: message });
   }
 });
 
