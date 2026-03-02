@@ -1,12 +1,47 @@
-node_modules
-backend/node_modules
-frontend/node_modules
-dist
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
 .env
+.env.*
+!.env.example
+
+# JS/TS deps and build outputs (all levels)
+**/node_modules/
+**/dist/
+**/build/
+**/.next/
+**/.turbo/
+**/.cache/
+coverage/
+
+# Python virtualenv and cache (all levels)
+**/.venv/
+**/venv/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Expo / React Native
+frontend/mobile/.expo/
+frontend/mobile/.expo-shared/
 
 # ML generated artifacts
 ml-service/runs/
-ml-service/*.pt
+ml-service/artifacts/
 ml-service/data/*
 !ml-service/data/.gitkeep
 ml-service/models/*
@@ -14,10 +49,6 @@ ml-service/models/*
 !ml-service/models/vehicle_best.pt
 !ml-service/models/vehicle_best.meta.json
 !ml-service/models/yolov8n.pt
-# ML runtime/cache artifacts
-ml-service/artifacts/
-ml-service/**/__pycache__/
-*.pyc
 
 # Local model weights
 ml-service/*.pt
@@ -31,3 +62,9 @@ ml-service/data/**/*.avi
 ml-service/data/**/*.mov
 ml-service/data/**/*.mkv
 ml-service/data/**/*.m4v
+
+# Local SQLite runtime databases
+backend/data/*.sqlite
+backend/data/*.sqlite-shm
+backend/data/*.sqlite-wal
+backend/data/access-control.runtime.json
