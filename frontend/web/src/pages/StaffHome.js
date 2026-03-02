@@ -16,7 +16,8 @@ const PLANNING_AREA_YEAR = process.env.REACT_APP_PLANNING_AREA_YEAR || '2019';
 const CROWD_DETAIL_ZOOM = 13.5;
 const ENABLE_MOCK_CROWD_HEAT = false;
 const TRAFFIC_REFRESH_MS = 60000;
-const PRESENCE_REFRESH_MS = 5000;
+const PRESENCE_REFRESH_MS = 3000;
+const PRESENCE_MAX_AGE_MS = 30000;
 const CAMERA_EXPLORER_ZOOM = 13.5;
 
 const CAMERA_REGIONS = [
@@ -270,9 +271,9 @@ function buildTrafficPopupHtml(camera) {
 }
 
 export default function StaffHome() {
-  const [poiStatus, setPoiStatus] = useState('Loading police, fire and hospital markers...');
-  const [adminStatus, setAdminStatus] = useState('Loading planning area boundaries...');
-  const [crowdStatus, setCrowdStatus] = useState(
+  const [, setPoiStatus] = useState('Loading police, fire and hospital markers...');
+  const [, setAdminStatus] = useState('Loading planning area boundaries...');
+  const [, setCrowdStatus] = useState(
     ENABLE_MOCK_CROWD_HEAT
       ? 'Loading crowd heat from backend...'
       : 'Mock crowd heat is disabled.'
@@ -291,6 +292,7 @@ export default function StaffHome() {
   const [isDispatching, setIsDispatching] = useState(false);
   const [mapZoom, setMapZoom] = useState(11);
   const [visibleTrafficCameras, setVisibleTrafficCameras] = useState([]);
+  const [debugMessages, setDebugMessages] = useState({});
   const wsRef = useRef(null);
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -298,6 +300,18 @@ export default function StaffHome() {
   const dispatchModeRef = useRef(false);
   const trafficCameraMarkersRef = useRef(new Map());
   const trafficCamerasRef = useRef([]);
+
+  const setDebugMessage = (key, message) => {
+    setDebugMessages((prev) => {
+      const next = { ...prev };
+      if (message) {
+        next[key] = message;
+      } else {
+        delete next[key];
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     dispatchModeRef.current = dispatchMode;
@@ -359,10 +373,19 @@ export default function StaffHome() {
             ? Number(data.generatedAt)
             : null
         });
-        setSystemStatus('System metrics synced from backend.');
+        const source = String(data?.cameraSource || '').toLowerCase();
+        setSystemStatus(
+          source === 'cache'
+            ? 'System metrics connected (camera count from cache).'
+            : 'System metrics connected.'
+        );
+        setDebugMessage('system', null);
       } catch (error) {
         if (isCancelled) return;
-        setSystemStatus(`Failed to load system metrics: ${error.message}`);
+        const detail = error instanceof Error ? error.message : String(error);
+        setSystemStatus('System metrics unavailable.');
+        setDebugMessage('system', `System metrics: ${detail}`);
+        console.error('[StaffHome] system metrics error:', error);
       }
     };
 
@@ -573,9 +596,13 @@ export default function StaffHome() {
             marker.addTo(poiLayers[poiType.key]);
           });
         }
-        setPoiStatus('Markers loaded from OneMap search API');
+        setPoiStatus('Map markers loaded.');
+        setDebugMessage('poi', null);
       } catch (error) {
-        setPoiStatus(`Failed to load some markers: ${error.message}`);
+        const detail = error instanceof Error ? error.message : String(error);
+        setPoiStatus('Some map markers are unavailable.');
+        setDebugMessage('poi', `POI markers: ${detail}`);
+        console.error('[StaffHome] poi markers error:', error);
       }
     };
 
@@ -627,8 +654,12 @@ export default function StaffHome() {
         setCrowdStatus(
           `Crowd heat loaded from backend (${crowdHeatPoints.length} detail points, ${crowdAreaScoreByName.size} area alerts${profile}).`
         );
+        setDebugMessage('crowd', null);
       } catch (error) {
-        setCrowdStatus(`Failed to load crowd heat: ${error.message}`);
+        const detail = error instanceof Error ? error.message : String(error);
+        setCrowdStatus('Crowd heat unavailable.');
+        setDebugMessage('crowd', `Crowd heat: ${detail}`);
+        console.error('[StaffHome] crowd heat error:', error);
       }
     };
 
@@ -688,16 +719,20 @@ export default function StaffHome() {
         syncVisibleTrafficCameras(map);
 
         setTrafficStatus(
-          `Traffic cameras loaded (${parsedCameras.length} cameras, inferred ${inferOkCount}, refresh every ${Math.round(TRAFFIC_REFRESH_MS / 1000)}s).`
+          `Traffic cameras online: ${parsedCameras.length} (inferred ${inferOkCount}, refresh ${Math.round(TRAFFIC_REFRESH_MS / 1000)}s).`
         );
+        setDebugMessage('traffic', null);
       } catch (error) {
-        setTrafficStatus(`Failed to load traffic cameras: ${error.message}`);
+        const detail = error instanceof Error ? error.message : String(error);
+        setTrafficStatus('Traffic cameras unavailable.');
+        setDebugMessage('traffic', `Traffic cameras: ${detail}`);
+        console.error('[StaffHome] traffic camera error:', error);
       }
     };
 
     const loadUserPresence = async () => {
       try {
-        const data = await fetchBackendJson(`${BACKEND_BASE_URL}/presence/users?maxAgeMs=180000`);
+        const data = await fetchBackendJson(`${BACKEND_BASE_URL}/presence/users?maxAgeMs=${PRESENCE_MAX_AGE_MS}`);
         const users = Array.isArray(data?.users) ? data.users : [];
         userPresenceLayer.clearLayers();
 
@@ -723,11 +758,15 @@ export default function StaffHome() {
 
         setPresenceStatus(
           users.length > 0
-            ? `Live mobile GPS users: ${users.length} (refresh ${Math.round(PRESENCE_REFRESH_MS / 1000)}s).`
-            : 'No recent mobile GPS users yet.'
+            ? `Live mobile users: ${users.length} (refresh ${Math.round(PRESENCE_REFRESH_MS / 1000)}s).`
+            : 'Live mobile users: 0'
         );
+        setDebugMessage('presence', null);
       } catch (error) {
-        setPresenceStatus(`Failed to load mobile GPS presence: ${error.message}`);
+        const detail = error instanceof Error ? error.message : String(error);
+        setPresenceStatus('Live mobile users unavailable.');
+        setDebugMessage('presence', `Mobile presence: ${detail}`);
+        console.error('[StaffHome] presence error:', error);
       }
     };
 
@@ -771,8 +810,12 @@ export default function StaffHome() {
             ? `Planning area boundaries loaded (${drawn} polygons, year ${PLANNING_AREA_YEAR}).`
             : `Planning area API returned no polygon geometry (year ${PLANNING_AREA_YEAR}).`
         );
+        setDebugMessage('admin', null);
       } catch (error) {
-        setAdminStatus(`Failed to load administrative boundaries: ${error.message}`);
+        const detail = error instanceof Error ? error.message : String(error);
+        setAdminStatus('Administrative boundaries unavailable.');
+        setDebugMessage('admin', `Administrative boundaries: ${detail}`);
+        console.error('[StaffHome] administrative boundaries error:', error);
       }
     };
 
@@ -996,18 +1039,20 @@ export default function StaffHome() {
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#14b8a6' }} />Traffic Camera</span>
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#ef4444' }} />Mobile GPS User</span>
           </div>
-          <p className="status-text">{poiStatus}</p>
-          <p className="status-text">{adminStatus}</p>
-          {ENABLE_MOCK_CROWD_HEAT && <p className="status-text">{crowdStatus}</p>}
           <p className="status-text">{trafficStatus}</p>
           <p className="status-text">{presenceStatus}</p>
-          <p className="source-text">
-            Powered by OneMap API (
-            <a href="https://www.onemap.gov.sg/" target="_blank" rel="noreferrer">
-              onemap.gov.sg
-            </a>
-            )
-          </p>
+          {Object.keys(debugMessages).length > 0 && (
+            <details className="debug-panel">
+              <summary className="debug-summary">Debug details ({Object.keys(debugMessages).length})</summary>
+              <ul className="debug-list">
+                {Object.entries(debugMessages).map(([scope, message]) => (
+                  <li key={scope}>
+                    <strong>{scope}:</strong> {message}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </section>
 
         <section className="camera-explorer">

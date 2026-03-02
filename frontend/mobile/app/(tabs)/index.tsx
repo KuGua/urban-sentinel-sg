@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as Location from "expo-location";
 import {
+  AppState,
+  AppStateStatus,
   Animated,
   Modal,
   Platform,
@@ -19,7 +21,7 @@ const PRE_SEND_COUNTDOWN_SEC = 5;
 const DEFAULT_CENTER = { lat: 1.3521, lng: 103.8198 };
 const DEFAULT_ZOOM = 11;
 const GPS_ZOOM = 16;
-const PRESENCE_USER_ID = "U_MOBILE_1";
+const PRESENCE_HEARTBEAT_MS = 10000;
 
 function readEnv(name: string): string | undefined {
   const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
@@ -168,6 +170,9 @@ export default function HomeScreen() {
 
   const holdTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const presenceUserIdRef = useRef<string>("");
+  const presenceLocationRef = useRef<{ lat: number; lng: number } | null>(null);
+  const presenceLastSentRef = useRef<number>(0);
 
   const guidancePulse = useRef(new Animated.Value(1)).current;
   const modalScale = useRef(new Animated.Value(0.9)).current;
@@ -324,9 +329,65 @@ export default function HomeScreen() {
 
   useEffect(() => {
     let cancelled = false;
+    let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+    let appStateSub: { remove: () => void } | null = null;
+    let locationSub: { remove: () => void } | null = null;
+
+    const registerPresenceUser = async (): Promise<string> => {
+      try {
+        const resp = await fetch(`${apiBaseUrl}/presence/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          const uid = String(data?.userId || "").trim();
+          if (uid) return uid;
+        }
+      } catch {
+        // no-op: fallback below
+      }
+      return `U_MOBILE_${Math.random().toString(36).slice(2, 10)}`;
+    };
+
+    const postPresence = async (lat: number, lng: number, source: string) => {
+      const userId = presenceUserIdRef.current;
+      if (!userId) return;
+      try {
+        await fetch(`${apiBaseUrl}/presence/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            lat,
+            lng,
+            ts: Date.now(),
+            source,
+          }),
+        });
+        presenceLastSentRef.current = Date.now();
+      } catch {
+        // keep silent to avoid noisy UI
+      }
+    };
+
+    const postOffline = async () => {
+      const userId = presenceUserIdRef.current;
+      if (!userId) return;
+      try {
+        await fetch(`${apiBaseUrl}/presence/offline`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+      } catch {
+        // best effort
+      }
+    };
 
     const locateUser = async () => {
       try {
+        presenceUserIdRef.current = await registerPresenceUser();
         const permission = await Location.requestForegroundPermissionsAsync();
         if (cancelled) return;
         if (permission.status !== "granted") {
@@ -342,25 +403,51 @@ export default function HomeScreen() {
         const lat = Number(pos.coords.latitude);
         const lng = Number(pos.coords.longitude);
         if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          presenceLocationRef.current = { lat, lng };
           setMapCenter({ lat, lng });
           setMapZoom(GPS_ZOOM);
           setMapStatus("loading");
           try {
-            await fetch(`${apiBaseUrl}/presence/update`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: PRESENCE_USER_ID,
-                lat,
-                lng,
-                ts: Date.now(),
-                source: "mobile_home_gps",
-              }),
-            });
+            await postPresence(lat, lng, "mobile_home_gps_init");
             setLocationStatus(`GPS locked at ${lat.toFixed(5)}, ${lng.toFixed(5)}. Synced to backend.`);
           } catch {
             setLocationStatus(`GPS locked at ${lat.toFixed(5)}, ${lng.toFixed(5)}. Backend sync failed.`);
           }
+
+          locationSub = await Location.watchPositionAsync(
+            {
+              accuracy: Location.Accuracy.Balanced,
+              timeInterval: PRESENCE_HEARTBEAT_MS,
+              distanceInterval: 5,
+            },
+            (update) => {
+              const nlat = Number(update.coords.latitude);
+              const nlng = Number(update.coords.longitude);
+              if (!Number.isFinite(nlat) || !Number.isFinite(nlng)) return;
+              presenceLocationRef.current = { lat: nlat, lng: nlng };
+              setMapCenter({ lat: nlat, lng: nlng });
+              setMapZoom(GPS_ZOOM);
+              const now = Date.now();
+              if (now - presenceLastSentRef.current >= PRESENCE_HEARTBEAT_MS - 500) {
+                void postPresence(nlat, nlng, "mobile_home_gps_watch");
+              }
+            }
+          );
+
+          heartbeatTimer = setInterval(() => {
+            const loc = presenceLocationRef.current;
+            if (!loc) return;
+            void postPresence(loc.lat, loc.lng, "mobile_home_gps_heartbeat");
+          }, PRESENCE_HEARTBEAT_MS);
+
+          appStateSub = AppState.addEventListener("change", (nextState: AppStateStatus) => {
+            if (nextState === "active") {
+              const loc = presenceLocationRef.current;
+              if (loc) void postPresence(loc.lat, loc.lng, "mobile_home_foreground");
+            } else if (nextState === "background" || nextState === "inactive") {
+              void postOffline();
+            }
+          });
         } else {
           setLocationStatus("GPS unavailable. Showing default Singapore view.");
         }
@@ -375,6 +462,10 @@ export default function HomeScreen() {
 
     return () => {
       cancelled = true;
+      if (heartbeatTimer) clearInterval(heartbeatTimer);
+      if (locationSub) locationSub.remove();
+      if (appStateSub) appStateSub.remove();
+      void postOffline();
     };
   }, [apiBaseUrl]);
 

@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
+import { randomUUID } from "crypto";
 
 import { RiskEngine } from "../core/riskEngine";
 import { IncidentEngine } from "../core/incidentEngine";
@@ -215,6 +216,31 @@ const userPresence = new Map<
     source?: string;
   }
 >();
+const PRESENCE_DEFAULT_MAX_AGE_MS = 30000;
+const PRESENCE_MAX_ENTRIES = 5000;
+const SYSTEM_METRICS_CAMERA_TTL_MS = 45000;
+
+let systemMetricsCameraCache:
+  | {
+      fetchedAt: number;
+      workingCameras: number;
+    }
+  | null = null;
+
+function prunePresence(nowMs: number, maxAgeMs: number): void {
+  for (const [uid, item] of userPresence.entries()) {
+    if (nowMs - item.ts > maxAgeMs) {
+      userPresence.delete(uid);
+    }
+  }
+  if (userPresence.size > PRESENCE_MAX_ENTRIES) {
+    const sorted = Array.from(userPresence.values()).sort((a, b) => a.ts - b.ts);
+    const removeN = userPresence.size - PRESENCE_MAX_ENTRIES;
+    for (let i = 0; i < removeN; i += 1) {
+      userPresence.delete(sorted[i].userId);
+    }
+  }
+}
 
 /* =====================================================
    REST Endpoints
@@ -288,18 +314,83 @@ app.post("/presence/update", (req, res) => {
 
   const payload = { userId, lat, lng, ts, source };
   userPresence.set(userId, payload);
+  prunePresence(Date.now(), PRESENCE_DEFAULT_MAX_AGE_MS);
   io.emit("user_presence", payload);
   res.json({ ok: true });
 });
 
+app.post("/presence/register", (_req, res) => {
+  const userId = `U_MOBILE_${randomUUID().slice(0, 8)}`;
+  res.json({ ok: true, userId, ts: Date.now() });
+});
+
+app.post("/presence/offline", (req, res) => {
+  const userId = String(req.body?.userId || "").trim();
+  if (!userId) {
+    res.status(400).json({ error: "userId is required" });
+    return;
+  }
+  const existed = userPresence.delete(userId);
+  io.emit("user_presence_offline", { userId, ts: Date.now() });
+  res.json({ ok: true, removed: existed });
+});
+
 app.get("/presence/users", (req, res) => {
-  const maxAgeMs = Math.max(1000, Number(req.query.maxAgeMs ?? 180000) || 180000);
+  const maxAgeMs = Math.max(1000, Number(req.query.maxAgeMs ?? PRESENCE_DEFAULT_MAX_AGE_MS) || PRESENCE_DEFAULT_MAX_AGE_MS);
   const now = Date.now();
+  prunePresence(now, maxAgeMs);
   const rows = Array.from(userPresence.values()).filter((item) => now - item.ts <= maxAgeMs);
   res.json({
     ts: now,
     count: rows.length,
     users: rows,
+  });
+});
+
+app.get("/system/metrics", async (_req, res) => {
+  const now = Date.now();
+  prunePresence(now, PRESENCE_DEFAULT_MAX_AGE_MS);
+  const totalUsers = Array.from(userPresence.values()).filter((item) => now - item.ts <= PRESENCE_DEFAULT_MAX_AGE_MS).length;
+
+  let workingCameras: number | null = null;
+  let cameraSource: "live" | "cache" | "unavailable" = "live";
+  try {
+    if (systemMetricsCameraCache && now - systemMetricsCameraCache.fetchedAt <= SYSTEM_METRICS_CAMERA_TTL_MS) {
+      workingCameras = systemMetricsCameraCache.workingCameras;
+      cameraSource = "cache";
+    } else {
+      const upstream = await fetchOneMapPublicJson<TrafficImagesResponse>(
+        "https://api.data.gov.sg/v1/transport/traffic-images"
+      );
+      const latestItem = Array.isArray(upstream?.items) && upstream.items.length > 0 ? upstream.items[0] : null;
+      const cameras = Array.isArray(latestItem?.cameras) ? latestItem.cameras : [];
+      workingCameras = cameras.filter((camera) => {
+        const cameraId = String(camera?.camera_id || "").trim();
+        const imageUrl = String(camera?.image || "").trim();
+        const lat = Number(camera?.location?.latitude);
+        const lng = Number(camera?.location?.longitude);
+        return Boolean(cameraId && imageUrl && Number.isFinite(lat) && Number.isFinite(lng));
+      }).length;
+      systemMetricsCameraCache = {
+        fetchedAt: now,
+        workingCameras,
+      };
+    }
+  } catch {
+    if (systemMetricsCameraCache) {
+      workingCameras = systemMetricsCameraCache.workingCameras;
+      cameraSource = "cache";
+    } else {
+      cameraSource = "unavailable";
+    }
+  }
+
+  res.json({
+    workingCameras,
+    totalUsers,
+    generatedAt: now,
+    cameraSource,
+    cameraUpdatedAt: systemMetricsCameraCache?.fetchedAt ?? null,
   });
 });
 

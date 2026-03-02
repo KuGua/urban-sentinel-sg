@@ -233,6 +233,32 @@
   font-size: 14px;
 }
 
+.debug-panel {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid #79bbcf;
+  border-radius: 8px;
+  background: rgba(54, 112, 152, 0.08);
+}
+
+.debug-summary {
+  cursor: pointer;
+  color: #183a4f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.debug-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #2c5b82;
+  font-size: 12px;
+}
+
+.debug-list li + li {
+  margin-top: 4px;
+}
+
 .source-text {
   margin: 10px 0 0;
   color: #367098;
