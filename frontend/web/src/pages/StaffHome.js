@@ -14,6 +14,17 @@ const BACKEND_BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'http://localhos
 const DISPATCH_ENDPOINT = process.env.REACT_APP_DISPATCH_ENDPOINT || '/dispatch/request';
 const PLANNING_AREA_YEAR = process.env.REACT_APP_PLANNING_AREA_YEAR || '2019';
 const CROWD_DETAIL_ZOOM = 13.5;
+const TRAFFIC_REFRESH_MS = 60000;
+const CAMERA_EXPLORER_ZOOM = 13.5;
+
+const CAMERA_REGIONS = [
+  { key: 'central', label: 'Central', center: [1.2966, 103.85], zoom: 14 },
+  { key: 'east', label: 'East', center: [1.352, 103.956], zoom: 14 },
+  { key: 'west', label: 'West', center: [1.35, 103.705], zoom: 14 },
+  { key: 'north', label: 'North', center: [1.4307, 103.8354], zoom: 14 },
+  { key: 'north-east', label: 'North-East', center: [1.3821, 103.893], zoom: 14 },
+  { key: 'south', label: 'South', center: [1.2746, 103.814], zoom: 14 }
+];
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -200,12 +211,67 @@ function buildBackendUrl(endpoint) {
   return `${BACKEND_BASE_URL}/${normalizedEndpoint}`;
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildTrafficPopupHtml(camera) {
+  const cameraId = escapeHtml(camera.cameraId || 'unknown');
+  const imageUrl = escapeHtml(camera.imageUrl || '');
+  const capturedAt = camera.capturedAt
+    ? `Captured: ${new Date(camera.capturedAt).toLocaleString()}`
+    : 'Captured time unavailable';
+  const info = camera?.inference;
+  const imgW = Number(info?.imageWidth) || 1;
+  const imgH = Number(info?.imageHeight) || 1;
+  const vehicleCount = Number.isFinite(Number(info?.vehicleCount)) ? Number(info.vehicleCount) : 0;
+  const inferStatus = info?.status === 'ok'
+    ? `Vehicles: ${vehicleCount}`
+    : info?.status === 'error'
+      ? `Infer: ${escapeHtml(info.error || 'error')}`
+      : `Infer: ${escapeHtml(info?.reason || 'skipped')}`;
+  const dets = Array.isArray(info?.detections) ? info.detections : [];
+  const boxes = info?.status === 'ok'
+    ? dets
+        .map((det) => {
+          const bbox = Array.isArray(det?.bbox) ? det.bbox : null;
+          if (!bbox || bbox.length !== 4) return '';
+          const [x1, y1, x2, y2] = bbox.map(Number);
+          if (![x1, y1, x2, y2].every(Number.isFinite)) return '';
+          const left = Math.max(0, Math.min(100, (x1 / imgW) * 100));
+          const top = Math.max(0, Math.min(100, (y1 / imgH) * 100));
+          const width = Math.max(0.8, Math.min(100, ((x2 - x1) / imgW) * 100));
+          const height = Math.max(0.8, Math.min(100, ((y2 - y1) / imgH) * 100));
+          const className = escapeHtml(det?.className || 'vehicle');
+          const conf = Number.isFinite(Number(det?.conf)) ? Number(det.conf).toFixed(2) : '0.00';
+          return `<div class="traffic-bbox" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%"><span>${className} ${conf}</span></div>`;
+        })
+        .join('')
+    : '';
+
+  return `
+    <div class="traffic-popup">
+      <div class="traffic-popup-head">Traffic Cam ${cameraId}</div>
+      <div class="traffic-popup-frame">
+        <img class="traffic-popup-image" src="${imageUrl}" alt="Traffic camera ${cameraId}" />
+        ${boxes}
+      </div>
+      <div class="traffic-popup-meta">${inferStatus}</div>
+      <div class="traffic-popup-time">${escapeHtml(capturedAt)}</div>
+    </div>
+  `;
+}
+
 export default function StaffHome() {
-  const [assistRequests, setAssistRequests] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [poiStatus, setPoiStatus] = useState('Loading police, fire and hospital markers...');
   const [adminStatus, setAdminStatus] = useState('Loading planning area boundaries...');
   const [crowdStatus, setCrowdStatus] = useState('Loading crowd heat from backend...');
+  const [trafficStatus, setTrafficStatus] = useState('Loading traffic cameras from backend...');
   const [systemMetrics, setSystemMetrics] = useState({
     workingCameras: null,
     totalUsers: null,
@@ -213,12 +279,39 @@ export default function StaffHome() {
   });
   const [systemStatus, setSystemStatus] = useState('Loading system metrics from backend...');
   const [selectedPin, setSelectedPin] = useState(null);
-  const [dispatchStatus, setDispatchStatus] = useState('Click the map to pin a location.');
+  const [dispatchMode, setDispatchMode] = useState(false);
+  const [dispatchStatus, setDispatchStatus] = useState('Enable Dispatch Mode first, then click the map to pin a location.');
   const [isDispatching, setIsDispatching] = useState(false);
+  const [mapZoom, setMapZoom] = useState(11);
+  const [visibleTrafficCameras, setVisibleTrafficCameras] = useState([]);
   const wsRef = useRef(null);
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
   const dispatchPinLayerRef = useRef(null);
+  const dispatchModeRef = useRef(false);
+  const trafficCameraMarkersRef = useRef(new Map());
+  const trafficCamerasRef = useRef([]);
+
+  useEffect(() => {
+    dispatchModeRef.current = dispatchMode;
+  }, [dispatchMode]);
+
+  const syncVisibleTrafficCameras = (map) => {
+    if (!map) return;
+    setMapZoom(map.getZoom());
+    const bounds = map.getBounds();
+    const visible = trafficCamerasRef.current.filter((camera) => bounds.contains([camera.lat, camera.lng]));
+    setVisibleTrafficCameras(visible);
+  };
+
+  const focusTrafficCamera = (cameraId) => {
+    const map = mapRef.current;
+    const marker = trafficCameraMarkersRef.current.get(cameraId);
+    if (!map || !marker) return;
+    const latLng = marker.getLatLng();
+    map.flyTo([latLng.lat, latLng.lng], Math.max(map.getZoom(), 16), { duration: 0.8 });
+    marker.openPopup();
+  };
 
   useEffect(() => {
     if (!localStorage.getItem('staffAuth')) {
@@ -228,14 +321,6 @@ export default function StaffHome() {
 
     const ws = new WebSocketClient();
     wsRef.current = ws;
-
-    ws.on('connect', () => {
-      setIsLoading(false);
-    });
-
-    ws.on('assist_request', (event) => {
-      setAssistRequests((prev) => [...prev, event.payload]);
-    });
 
     ws.connect();
 
@@ -310,6 +395,7 @@ export default function StaffHome() {
     const adminBoundaryLayer = L.layerGroup().addTo(map);
     const crowdAreaLayer = L.layerGroup().addTo(map);
     const crowdHeatLayer = L.layerGroup().addTo(map);
+    const trafficCameraLayer = L.layerGroup().addTo(map);
     const dispatchPinLayer = L.layerGroup().addTo(map);
     dispatchPinLayerRef.current = dispatchPinLayer;
 
@@ -526,6 +612,69 @@ export default function StaffHome() {
       }
     };
 
+    const loadTrafficCameras = async () => {
+      try {
+        const data = await fetchBackendJson(`${BACKEND_BASE_URL}/traffic/cameras/enriched?maxCameras=30&withInfer=1`);
+        const cameras = Array.isArray(data?.cameras) ? data.cameras : [];
+
+        trafficCameraMarkersRef.current.clear();
+        trafficCameraLayer.clearLayers();
+        const parsedCameras = [];
+        let inferOkCount = 0;
+        for (const camera of cameras) {
+          const lat = Number(camera?.lat);
+          const lng = Number(camera?.lng);
+          const imageFromSnapshot = String(camera?.imageUrl || '').trim();
+          const finalImageUrl = imageFromSnapshot || String(camera?.image || '').trim();
+          const cameraId = String(camera?.cameraId || camera?.camera_id || camera?.id || 'unknown');
+          const capturedAt = String(camera?.capturedAt || camera?.timestamp || '');
+          const inference = camera?.inference || { status: 'skipped', reason: 'no-inference' };
+          if (!Number.isFinite(lat) || !Number.isFinite(lng) || !finalImageUrl) {
+            continue;
+          }
+
+          const marker = L.circleMarker([lat, lng], {
+            radius: 5.5,
+            color: '#0f766e',
+            fillColor: '#14b8a6',
+            fillOpacity: 0.9,
+            weight: 1.5,
+            bubblingMouseEvents: false,
+            className: 'traffic-camera-marker'
+          });
+
+          const popupHtml = buildTrafficPopupHtml({
+            cameraId,
+            imageUrl: finalImageUrl,
+            capturedAt,
+            inference
+          });
+
+          marker.bindPopup(popupHtml, { maxWidth: 280, minWidth: 220 });
+          marker.addTo(trafficCameraLayer);
+          trafficCameraMarkersRef.current.set(cameraId, marker);
+          if (inference?.status === 'ok') inferOkCount += 1;
+          parsedCameras.push({
+            cameraId,
+            lat,
+            lng,
+            imageUrl: finalImageUrl,
+            capturedAt,
+            inference
+          });
+        }
+
+        trafficCamerasRef.current = parsedCameras;
+        syncVisibleTrafficCameras(map);
+
+        setTrafficStatus(
+          `Traffic cameras loaded (${parsedCameras.length} cameras, inferred ${inferOkCount}, refresh every ${Math.round(TRAFFIC_REFRESH_MS / 1000)}s).`
+        );
+      } catch (error) {
+        setTrafficStatus(`Failed to load traffic cameras: ${error.message}`);
+      }
+    };
+
     const loadAdministrativeBoundaries = async () => {
       try {
         const data = await fetchBackendJson(
@@ -569,8 +718,27 @@ export default function StaffHome() {
       }
     };
 
+    const syncViewportTraffic = () => syncVisibleTrafficCameras(map);
     map.on('zoomend', toggleCrowdViewByZoom);
+    map.on('zoomend', syncViewportTraffic);
+    map.on('moveend', syncViewportTraffic);
     map.on('click', (event) => {
+      if (!dispatchModeRef.current) {
+        return;
+      }
+
+      const targetEl = event?.originalEvent?.target;
+      if (targetEl && typeof targetEl.closest === 'function') {
+        if (
+          targetEl.closest('.traffic-camera-marker') ||
+          targetEl.closest('.leaflet-interactive') ||
+          targetEl.closest('.leaflet-popup') ||
+          targetEl.closest('.leaflet-marker-icon')
+        ) {
+          return;
+        }
+      }
+
       const lat = Number(event.latlng?.lat);
       const lng = Number(event.latlng?.lng);
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
@@ -596,9 +764,15 @@ export default function StaffHome() {
     loadPoiMarkers();
     loadAdministrativeBoundaries();
     loadCrowdHeat();
+    loadTrafficCameras();
+    syncVisibleTrafficCameras(map);
+    const trafficIntervalId = window.setInterval(loadTrafficCameras, TRAFFIC_REFRESH_MS);
     mapRef.current = map;
 
     return () => {
+      window.clearInterval(trafficIntervalId);
+      map.off('zoomend', syncViewportTraffic);
+      map.off('moveend', syncViewportTraffic);
       map.off('zoomend', toggleCrowdViewByZoom);
       map.off('click');
       map.remove();
@@ -608,6 +782,11 @@ export default function StaffHome() {
   }, []);
 
   const handleDispatch = async (serviceType) => {
+    if (!dispatchMode) {
+      setDispatchStatus('Enable Dispatch Mode first, then click the map to place a pin.');
+      return;
+    }
+
     if (!selectedPin) {
       setDispatchStatus('Please pin a location on the map first.');
       return;
@@ -654,30 +833,6 @@ export default function StaffHome() {
     }
   };
 
-  const handleAccept = (requestId) => {
-    wsRef.current?.send({
-      type: 'assist_response',
-      payload: {
-        requestId,
-        action: 'accept'
-      }
-    });
-
-    setAssistRequests((prev) => prev.filter((r) => r.requestId !== requestId));
-  };
-
-  const handleDecline = (requestId) => {
-    wsRef.current?.send({
-      type: 'assist_response',
-      payload: {
-        requestId,
-        action: 'decline'
-      }
-    });
-
-    setAssistRequests((prev) => prev.filter((r) => r.requestId !== requestId));
-  };
-
   return (
     <div className="staff-page">
       <header className="staff-header">
@@ -716,6 +871,23 @@ export default function StaffHome() {
               </p>
               <div className="dispatch-panel">
                 <h4 className="dispatch-title">Emergency Dispatch</h4>
+                <button
+                  type="button"
+                  className={`dispatch-mode-btn ${dispatchMode ? 'dispatch-mode-on' : ''}`}
+                  onClick={() => {
+                    setDispatchMode((prev) => {
+                      const next = !prev;
+                      setDispatchStatus(
+                        next
+                          ? 'Dispatch Mode enabled. Click map to place a pin.'
+                          : 'Dispatch Mode disabled. Camera clicks will only open preview.'
+                      );
+                      return next;
+                    });
+                  }}
+                >
+                  {dispatchMode ? 'Dispatch Mode: ON' : 'Dispatch Mode: OFF'}
+                </button>
                 <p className="dispatch-text">
                   Pin: {selectedPin ? `${selectedPin.lat.toFixed(5)}, ${selectedPin.lng.toFixed(5)}` : '--'}
                 </p>
@@ -756,10 +928,12 @@ export default function StaffHome() {
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#367098' }} />Administrative Boundary</span>
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#b91c1c' }} />Crowd Alert (Zoom out)</span>
             <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#f97316' }} />Crowd Heat (Zoom in)</span>
+            <span className="legend-item"><span className="legend-dot" style={{ backgroundColor: '#14b8a6' }} />Traffic Camera</span>
           </div>
           <p className="status-text">{poiStatus}</p>
           <p className="status-text">{adminStatus}</p>
           <p className="status-text">{crowdStatus}</p>
+          <p className="status-text">{trafficStatus}</p>
           <p className="source-text">
             Powered by OneMap API (
             <a href="https://www.onemap.gov.sg/" target="_blank" rel="noreferrer">
@@ -769,52 +943,76 @@ export default function StaffHome() {
           </p>
         </section>
 
-        {isLoading ? (
-          <div className="empty-state">Loading...</div>
-        ) : assistRequests.length === 0 ? (
-          <div className="empty-state">
-            <h2>No pending requests</h2>
-            <p>Waiting for new assist requests...</p>
+        <section className="camera-explorer">
+          <div className="camera-explorer-head">
+            <h2 className="camera-explorer-title">Traffic Camera Explorer</h2>
+            <p className="camera-explorer-subtitle">
+              {`Map zoom ${mapZoom.toFixed(2)}. ${
+                mapZoom >= CAMERA_EXPLORER_ZOOM
+                  ? 'Showing cameras in current map view.'
+                  : 'Pick a region first, then zoom in to browse cameras.'
+              }`}
+            </p>
           </div>
-        ) : (
-          <div className="request-list">
-            {assistRequests.map((request) => (
-              <div key={request.requestId} className="request-card">
-                <div className="request-head">
-                  <h3>Assist Request</h3>
-                  <span
-                    className={`severity-badge ${
-                      request.severity === 'critical'
-                        ? 'severity-critical'
-                        : 'severity-warning'
-                    }`}
-                  >
-                    {request.severity === 'critical' ? 'Critical' : 'Warning'}
-                  </span>
-                </div>
 
-                <p className="request-text">
-                  {request.message || 'Assist request'}{request.loc?.zoneId ? ` (Zone ${request.loc.zoneId})` : ''}
-                </p>
-
-                <div className="request-actions">
-                  <button
-                    onClick={() => handleAccept(request.requestId)}
-                    className="btn btn-accept"
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => handleDecline(request.requestId)}
-                    className="btn btn-decline"
-                  >
-                    Decline
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          {mapZoom < CAMERA_EXPLORER_ZOOM ? (
+            <div className="camera-region-grid">
+              {CAMERA_REGIONS.map((region) => (
+                <button
+                  key={region.key}
+                  type="button"
+                  className="camera-region-btn"
+                  onClick={() => {
+                    const map = mapRef.current;
+                    if (!map) return;
+                    map.flyTo(region.center, region.zoom, { duration: 0.85 });
+                  }}
+                >
+                  {region.label}
+                </button>
+              ))}
+            </div>
+          ) : visibleTrafficCameras.length === 0 ? (
+            <div className="empty-state">
+              <h2>No cameras in this view</h2>
+              <p>Drag the map a little or zoom out and pick another region.</p>
+            </div>
+          ) : (
+            <div className="camera-card-grid">
+              {visibleTrafficCameras.map((camera) => (
+                <article key={camera.cameraId} className="camera-card">
+                  <img
+                    className="camera-card-image"
+                    src={camera.imageUrl}
+                    alt={`Traffic camera ${camera.cameraId}`}
+                  />
+                  <div className="camera-card-body">
+                    <p className="camera-card-title">Cam {camera.cameraId}</p>
+                    <p className="camera-card-count">
+                      {camera?.inference?.status === 'ok'
+                        ? `Vehicles: ${camera.inference.vehicleCount}`
+                        : camera?.inference?.status === 'error'
+                          ? 'Infer failed'
+                          : 'Infer skipped'}
+                    </p>
+                    <p className="camera-card-time">
+                      {camera.capturedAt
+                        ? `Captured: ${new Date(camera.capturedAt).toLocaleString()}`
+                        : 'Captured time unavailable'}
+                    </p>
+                    <button
+                      type="button"
+                      className="camera-card-open"
+                      onClick={() => focusTrafficCamera(camera.cameraId)}
+                    >
+                      Open on map
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );

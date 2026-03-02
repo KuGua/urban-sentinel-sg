@@ -141,6 +141,69 @@ export type MlInferFrameRequest =
 export type MlInferFrameResponse = PerceptionFrameResult;
 
 //////////////////////////////
+// Traffic Camera + Vehicle Infer Contracts
+//////////////////////////////
+
+export type VehicleDetection = {
+  bbox: [number, number, number, number]; // [x1,y1,x2,y2]
+  conf: number; // 0..1
+  className: string; // car|bus|truck|...
+};
+
+export type MlVehicleInferRequest = {
+  cameraId: ID;
+  imageUrl?: string;
+  imageBase64: string; // "data:image/jpeg;base64,..."
+  capturedAt?: string; // ISO
+};
+
+export type MlVehicleInferResponse = {
+  cameraId: ID;
+  model: string;
+  ts: EpochMs;
+  imageWidth?: number;
+  imageHeight?: number;
+  vehicleCount: number;
+  detections: VehicleDetection[];
+};
+
+export type TrafficCameraSnapshot = {
+  cameraId: ID;
+  lat: number;
+  lng: number;
+  imageUrl: string;
+  capturedAt?: string; // ISO
+};
+
+export type TrafficCameraEnriched = TrafficCameraSnapshot & {
+  inference:
+    | {
+        status: "ok";
+        vehicleCount: number;
+        model: string;
+        ts: EpochMs;
+        imageWidth?: number;
+        imageHeight?: number;
+        detections: VehicleDetection[];
+      }
+    | {
+        status: "error";
+        error: string;
+      }
+    | {
+        status: "skipped";
+        reason: string;
+      };
+};
+
+export type TrafficCamerasEnrichedResponse = {
+  generatedAt: string; // ISO
+  source: "data.gov.sg";
+  modelService: string;
+  cameras: TrafficCameraEnriched[];
+};
+
+//////////////////////////////
 // Backend Risk Fusion Output
 //////////////////////////////
 
