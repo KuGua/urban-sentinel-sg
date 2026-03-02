@@ -3,3 +3,20 @@ backend/node_modules
 frontend/node_modules
 dist
 .env
+
+# ML runtime/cache artifacts
+ml-service/artifacts/
+ml-service/**/__pycache__/
+*.pyc
+
+# Local model weights
+ml-service/*.pt
+ml-service/*.onnx
+ml-service/models/**/*.pt
+
+# Local datasets/videos
+ml-service/data/**/*.mp4
+ml-service/data/**/*.avi
+ml-service/data/**/*.mov
+ml-service/data/**/*.mkv
+ml-service/data/**/*.m4v
