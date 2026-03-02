@@ -6,14 +6,17 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Dict, Generator, List
+from typing import Any, Dict, Generator, List
+
+import numpy as np
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from ml.detector import YoloV8HeadVehicleDetector, YoloV8SplitHeadVehicleDetector
-from ml.features import aggregate_detections_by_zone, density_conf_counts_per_zone
+from ml.features import aggregate_detections_by_zone, clamp01, density_conf_counts_per_zone
+from ml.lwcc import LWCCCrowdDetector, zone_counts_from_density_map
 from ml.preprocess import preprocess_frame
 from ml.roi_density import DensityConfig, ROIDensityEstimator, parse_roi_string
 from ml.videoio import iter_sampled_video_frames
@@ -35,6 +38,14 @@ def run_head_vehicle_records(
     person_conf_threshold: float = 0.25,
     vehicle_conf_threshold: float = 0.25,
     device: str = "auto",
+    crowd_backend: str = "yolo",
+    lwcc_module: str = "lwcc",
+    lwcc_model: str = "",
+    lwcc_conf_threshold: float = 0.20,
+    lwcc_head_box_size: float = 14.0,
+    lwcc_peak_kernel: int = 5,
+    lwcc_peak_threshold: float = 0.15,
+    lwcc_max_heads: int = 500,
     roi: str = "",
     avg_height_m: float = 1.70,
     ema_alpha: float = 0.20,
@@ -54,25 +65,45 @@ def run_head_vehicle_records(
             head_spacing_to_body_ratio=float(head_spacing_to_body_ratio),
         )
         density_estimator = ROIDensityEstimator(density_cfg)
-    if yolo_model:
-        detector = YoloV8HeadVehicleDetector(
-            model_name=yolo_model,
-            conf_threshold=yolo_conf_threshold,
-            include_person=True,
-            include_vehicle=True,
-            include_head_proxy=True,
+    backend = str(crowd_backend).strip().lower()
+    if backend not in {"yolo", "lwcc", "hybrid"}:
+        raise ValueError(f"Unsupported crowd_backend: {crowd_backend}")
+
+    yolo_detector: Any = None
+    lwcc_detector: LWCCCrowdDetector | None = None
+    if backend in {"yolo", "hybrid"}:
+        if yolo_model:
+            yolo_detector = YoloV8HeadVehicleDetector(
+                model_name=yolo_model,
+                conf_threshold=yolo_conf_threshold,
+                include_person=True,
+                include_vehicle=True,
+                include_head_proxy=True,
+                device=device,
+            )
+        else:
+            yolo_detector = YoloV8SplitHeadVehicleDetector(
+                person_model_name=person_model,
+                vehicle_model_name=vehicle_model,
+                person_conf_threshold=person_conf_threshold,
+                vehicle_conf_threshold=vehicle_conf_threshold,
+                include_head_proxy=True,
+                device=device,
+            )
+    if backend in {"lwcc", "hybrid"}:
+        lwcc_detector = LWCCCrowdDetector(
+            module_name=lwcc_module,
+            model_name=lwcc_model,
+            conf_threshold=lwcc_conf_threshold,
+            head_box_size_px=lwcc_head_box_size,
+            peak_kernel=lwcc_peak_kernel,
+            peak_threshold=lwcc_peak_threshold,
+            max_heads=lwcc_max_heads,
             device=device,
         )
-    else:
-        detector = YoloV8SplitHeadVehicleDetector(
-            person_model_name=person_model,
-            vehicle_model_name=vehicle_model,
-            person_conf_threshold=person_conf_threshold,
-            vehicle_conf_threshold=vehicle_conf_threshold,
-            include_head_proxy=True,
-            device=device,
-        )
+
     last_detections: List[Dict[str, float | int | str | List[float]]] = []
+    last_lwcc_aux: Dict[str, Any] = {}
     base_ts = int(start_ts_ms if start_ts_ms is not None else int(time.time() * 1000))
 
     for _src_idx, proc_idx, elapsed_ms, frame in iter_sampled_video_frames(video_path, fps):
@@ -84,9 +115,33 @@ def run_head_vehicle_records(
             jpeg_quality=jpeg_quality,
         )
 
-        if detector.available and (proc_idx % max(1, detect_every) == 0):
-            last_detections = detector.detect(resized_bgr)  # type: ignore[assignment]
-        detections = last_detections if detector.available else []
+        do_detect = proc_idx % max(1, detect_every) == 0
+        if do_detect:
+            yolo_dets: List[Dict[str, Any]] = []
+            lwcc_dets: List[Dict[str, Any]] = []
+            lwcc_aux: Dict[str, Any] = {}
+            if yolo_detector is not None and bool(getattr(yolo_detector, "available", False)):
+                yolo_dets = yolo_detector.detect(resized_bgr)  # type: ignore[assignment]
+            if lwcc_detector is not None and lwcc_detector.available:
+                lwcc_dets, lwcc_aux = lwcc_detector.detect_with_aux(resized_bgr)
+
+            if backend == "yolo":
+                last_detections = yolo_dets
+                last_lwcc_aux = {}
+            elif backend == "lwcc":
+                last_detections = lwcc_dets
+                last_lwcc_aux = lwcc_aux
+            else:
+                yolo_vehicle = [d for d in yolo_dets if str(d.get("label", "")) == "vehicle"]
+                last_detections = yolo_vehicle + lwcc_dets
+                last_lwcc_aux = lwcc_aux
+
+        detections = list(last_detections)
+        detector_available = False
+        if backend in {"yolo", "hybrid"} and yolo_detector is not None:
+            detector_available = detector_available or bool(getattr(yolo_detector, "available", False))
+        if backend in {"lwcc", "hybrid"} and lwcc_detector is not None:
+            detector_available = detector_available or bool(lwcc_detector.available)
 
         person_counts, person_conf_sums, person_conf_counts = aggregate_detections_by_zone(
             detections, zones, include_labels={"person"}
@@ -103,22 +158,37 @@ def run_head_vehicle_records(
             counts=person_counts,
             conf_sums=person_conf_sums,
             conf_counts=person_conf_counts,
-            detector_available=detector.available,
+            detector_available=detector_available,
         )
         vehicle_density, vehicle_conf, vehicle_by_zone = density_conf_counts_per_zone(
             zones=zones,
             counts=vehicle_counts,
             conf_sums=vehicle_conf_sums,
             conf_counts=vehicle_conf_counts,
-            detector_available=detector.available,
+            detector_available=detector_available,
         )
         head_density, head_conf, head_by_zone = density_conf_counts_per_zone(
             zones=zones,
             counts=head_counts,
             conf_sums=head_conf_sums,
             conf_counts=head_conf_counts,
-            detector_available=detector.available,
+            detector_available=detector_available,
         )
+
+        density_map = last_lwcc_aux.get("density_map")
+        if isinstance(density_map, np.ndarray) and density_map.ndim == 2 and density_map.size > 0:
+            lwcc_counts = zone_counts_from_density_map(
+                density_map=density_map,
+                zones=zones,
+                frame_shape_hw=resized_bgr.shape[:2],
+            )
+            for zone in zones:
+                zid = zone.zone_id
+                zone_count = max(0.0, float(lwcc_counts.get(zid, 0.0)))
+                people_by_zone[zid] = int(round(zone_count))
+                person_density[zid] = float(clamp01(zone_count / max(zone.capacity, 1.0)))
+                if person_conf_counts.get(zid, 0) <= 0:
+                    person_conf[zid] = float(max(person_conf.get(zid, 0.0), lwcc_conf_threshold))
 
         ts = int(base_ts + elapsed_ms)
         payload_zones: List[Dict[str, object]] = []
@@ -142,8 +212,16 @@ def run_head_vehicle_records(
         row = {
             "ts": ts,
             "zones": payload_zones,
-            "detectorAvailable": bool(detector.available),
+            "detectorAvailable": bool(detector_available),
+            "crowdBackend": backend,
         }
+        if backend in {"lwcc", "hybrid"}:
+            row["lwcc"] = {
+                "available": bool(lwcc_detector.available) if lwcc_detector is not None else False,
+                "reason": "" if lwcc_detector is None else str(lwcc_detector.reason),
+                "pointCount": int(last_lwcc_aux.get("point_count", 0)),
+                "countEstimate": float(last_lwcc_aux.get("count_estimate", 0.0)),
+            }
         if density_estimator is not None:
             head_dets = []
             person_boxes = []
@@ -188,6 +266,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--person-conf-threshold", type=float, default=0.25)
     parser.add_argument("--vehicle-conf-threshold", type=float, default=0.25)
     parser.add_argument(
+        "--crowd-backend",
+        default="yolo",
+        choices=["yolo", "lwcc", "hybrid"],
+        help="yolo: current behavior; lwcc: head/crowd by LWCC; hybrid: LWCC crowd + YOLO vehicle.",
+    )
+    parser.add_argument("--lwcc-module", default="lwcc")
+    parser.add_argument("--lwcc-model", default="")
+    parser.add_argument("--lwcc-conf-threshold", type=float, default=0.20)
+    parser.add_argument("--lwcc-head-box-size", type=float, default=14.0)
+    parser.add_argument("--lwcc-peak-kernel", type=int, default=5)
+    parser.add_argument("--lwcc-peak-threshold", type=float, default=0.15)
+    parser.add_argument("--lwcc-max-heads", type=int, default=500)
+    parser.add_argument(
         "--device",
         default="auto",
         help="Inference device: auto|cpu|0. auto uses CUDA GPU when available.",
@@ -227,6 +318,14 @@ def main() -> None:
             person_conf_threshold=args.person_conf_threshold,
             vehicle_conf_threshold=args.vehicle_conf_threshold,
             device=args.device,
+            crowd_backend=args.crowd_backend,
+            lwcc_module=args.lwcc_module,
+            lwcc_model=args.lwcc_model,
+            lwcc_conf_threshold=args.lwcc_conf_threshold,
+            lwcc_head_box_size=args.lwcc_head_box_size,
+            lwcc_peak_kernel=args.lwcc_peak_kernel,
+            lwcc_peak_threshold=args.lwcc_peak_threshold,
+            lwcc_max_heads=args.lwcc_max_heads,
             roi=args.roi,
             avg_height_m=args.avg_height_m,
             ema_alpha=args.ema_alpha,

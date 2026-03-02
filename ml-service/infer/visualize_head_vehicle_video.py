@@ -6,7 +6,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import cv2
 import numpy as np
@@ -16,6 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from ml.detector import YoloV8HeadVehicleDetector, YoloV8SplitHeadVehicleDetector
+from ml.lwcc import LWCCCrowdDetector, zone_counts_from_density_map
 from ml.features import aggregate_detections_by_zone
 from ml.preprocess import preprocess_frame
 from ml.roi_density import DensityConfig, ROIDensityEstimator, parse_roi_string
@@ -140,6 +141,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--person-conf-threshold", type=float, default=0.25)
     parser.add_argument("--vehicle-conf-threshold", type=float, default=0.25)
     parser.add_argument(
+        "--crowd-backend",
+        default="yolo",
+        choices=["yolo", "lwcc", "hybrid"],
+        help="yolo: current behavior; lwcc: head/crowd by LWCC; hybrid: LWCC crowd + YOLO vehicle.",
+    )
+    parser.add_argument("--lwcc-module", default="lwcc")
+    parser.add_argument("--lwcc-model", default="")
+    parser.add_argument("--lwcc-conf-threshold", type=float, default=0.20)
+    parser.add_argument("--lwcc-head-box-size", type=float, default=14.0)
+    parser.add_argument("--lwcc-peak-kernel", type=int, default=5)
+    parser.add_argument("--lwcc-peak-threshold", type=float, default=0.15)
+    parser.add_argument("--lwcc-max-heads", type=int, default=500)
+    parser.add_argument(
         "--device",
         default="auto",
         help="Inference device: auto|cpu|0. auto uses CUDA GPU when available.",
@@ -176,22 +190,37 @@ def main() -> None:
             head_spacing_to_body_ratio=float(args.head_spacing_to_body_ratio),
         )
         density_estimator = ROIDensityEstimator(density_cfg)
-    if args.yolo_model:
-        detector = YoloV8HeadVehicleDetector(
-            model_name=args.yolo_model,
-            conf_threshold=args.yolo_conf_threshold,
-            include_person=True,
-            include_vehicle=True,
-            include_head_proxy=True,
-            device=args.device,
-        )
-    else:
-        detector = YoloV8SplitHeadVehicleDetector(
-            person_model_name=args.person_model,
-            vehicle_model_name=args.vehicle_model,
-            person_conf_threshold=args.person_conf_threshold,
-            vehicle_conf_threshold=args.vehicle_conf_threshold,
-            include_head_proxy=True,
+    backend = str(args.crowd_backend).strip().lower()
+    yolo_detector: Any = None
+    lwcc_detector: LWCCCrowdDetector | None = None
+    if backend in {"yolo", "hybrid"}:
+        if args.yolo_model:
+            yolo_detector = YoloV8HeadVehicleDetector(
+                model_name=args.yolo_model,
+                conf_threshold=args.yolo_conf_threshold,
+                include_person=True,
+                include_vehicle=True,
+                include_head_proxy=True,
+                device=args.device,
+            )
+        else:
+            yolo_detector = YoloV8SplitHeadVehicleDetector(
+                person_model_name=args.person_model,
+                vehicle_model_name=args.vehicle_model,
+                person_conf_threshold=args.person_conf_threshold,
+                vehicle_conf_threshold=args.vehicle_conf_threshold,
+                include_head_proxy=True,
+                device=args.device,
+            )
+    if backend in {"lwcc", "hybrid"}:
+        lwcc_detector = LWCCCrowdDetector(
+            module_name=args.lwcc_module,
+            model_name=args.lwcc_model,
+            conf_threshold=args.lwcc_conf_threshold,
+            head_box_size_px=args.lwcc_head_box_size,
+            peak_kernel=args.lwcc_peak_kernel,
+            peak_threshold=args.lwcc_peak_threshold,
+            max_heads=args.lwcc_max_heads,
             device=args.device,
         )
     if not args.no_show:
@@ -216,6 +245,7 @@ def main() -> None:
 
     base_ts = int(args.start_ts if args.start_ts is not None else int(time.time() * 1000))
     last_detections: List[Dict[str, float | int | str | List[float]]] = []
+    last_lwcc_aux: Dict[str, Any] = {}
     num_frames = 0
     try:
         for _src_idx, proc_idx, elapsed_ms, frame in iter_sampled_video_frames(args.video, args.fps):
@@ -226,9 +256,26 @@ def main() -> None:
                 cctv_sim=args.cctv_sim,
                 jpeg_quality=args.jpeg_quality,
             )
-            if detector.available and (proc_idx % max(1, args.detect_every) == 0):
-                last_detections = detector.detect(resized_bgr)  # type: ignore[assignment]
-            detections = last_detections if detector.available else []
+            if proc_idx % max(1, args.detect_every) == 0:
+                yolo_dets: List[Dict[str, Any]] = []
+                lwcc_dets: List[Dict[str, Any]] = []
+                lwcc_aux: Dict[str, Any] = {}
+                if yolo_detector is not None and bool(getattr(yolo_detector, "available", False)):
+                    yolo_dets = yolo_detector.detect(resized_bgr)  # type: ignore[assignment]
+                if lwcc_detector is not None and lwcc_detector.available:
+                    lwcc_dets, lwcc_aux = lwcc_detector.detect_with_aux(resized_bgr)
+
+                if backend == "yolo":
+                    last_detections = yolo_dets
+                    last_lwcc_aux = {}
+                elif backend == "lwcc":
+                    last_detections = lwcc_dets
+                    last_lwcc_aux = lwcc_aux
+                else:
+                    yolo_vehicle = [d for d in yolo_dets if str(d.get("label", "")) == "vehicle"]
+                    last_detections = yolo_vehicle + lwcc_dets
+                    last_lwcc_aux = lwcc_aux
+            detections = list(last_detections)
 
             person_counts, _, _ = aggregate_detections_by_zone(
                 detections, zones, include_labels={"person"}
@@ -239,6 +286,15 @@ def main() -> None:
             head_counts, _, _ = aggregate_detections_by_zone(
                 detections, zones, include_labels={"head"}
             )
+            density_map = last_lwcc_aux.get("density_map")
+            if isinstance(density_map, np.ndarray) and density_map.ndim == 2 and density_map.size > 0:
+                lwcc_zone_counts = zone_counts_from_density_map(
+                    density_map=density_map,
+                    zones=zones,
+                    frame_shape_hw=resized_bgr.shape[:2],
+                )
+                for zid, count_float in lwcc_zone_counts.items():
+                    person_counts[zid] = int(round(max(0.0, float(count_float))))
 
             vis = _draw_zone_overlay(
                 resized_bgr,
@@ -296,6 +352,13 @@ def main() -> None:
                 row = {"ts": ts, "zones": payload_zones}
                 if density_metrics is not None:
                     row["roiDensity"] = density_metrics
+                if backend in {"lwcc", "hybrid"}:
+                    row["lwcc"] = {
+                        "available": bool(lwcc_detector.available) if lwcc_detector is not None else False,
+                        "reason": "" if lwcc_detector is None else str(lwcc_detector.reason),
+                        "pointCount": int(last_lwcc_aux.get("point_count", 0)),
+                        "countEstimate": float(last_lwcc_aux.get("count_estimate", 0.0)),
+                    }
                 out_jsonl_f.write(json.dumps(row, separators=(",", ":")) + "\n")
 
             if out_video_writer is not None:
@@ -324,8 +387,12 @@ def main() -> None:
         print(f"Wrote JSONL -> {args.out_jsonl}")
     if out_video_writer is not None:
         print(f"Wrote annotated video -> {args.out_video}")
-    if detector.available is False and detector.reason:
-        print(f"YOLO disabled: {detector.reason}")
+    if yolo_detector is not None and bool(getattr(yolo_detector, "available", True)) is False:
+        reason = str(getattr(yolo_detector, "reason", "")).strip()
+        if reason:
+            print(f"YOLO disabled: {reason}")
+    if lwcc_detector is not None and lwcc_detector.available is False and lwcc_detector.reason:
+        print(f"LWCC disabled: {lwcc_detector.reason}")
 
 
 if __name__ == "__main__":
