@@ -1,9 +1,10 @@
-import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 import { randomUUID } from "crypto";
+import path from "path";
+import dotenv from "dotenv";
 
 import { RiskEngine } from "../core/riskEngine";
 import { IncidentEngine } from "../core/incidentEngine";
@@ -20,6 +21,9 @@ import { WebSocketPublisher } from "../events/WebSocketPublisher";
 import mapData from "../data/map.json";
 import CONFIG from "./config";
 import { buildMockCrowdHeatSnapshot } from "./mock/crowdHeat";
+
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+dotenv.config();
 
 /* =====================================================
    App + Server
