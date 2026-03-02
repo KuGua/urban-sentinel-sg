@@ -15,7 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from ml.detector import YoloV8HeadVehicleDetector
+from ml.detector import YoloV8HeadVehicleDetector, YoloV8SplitHeadVehicleDetector
 from ml.features import aggregate_detections_by_zone
 from ml.preprocess import preprocess_frame
 from ml.videoio import iter_sampled_video_frames
@@ -128,8 +128,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--detect-every", type=int, default=3)
     parser.add_argument("--cctv-sim", action="store_true")
     parser.add_argument("--jpeg-quality", type=int, default=40)
-    parser.add_argument("--yolo-model", default="yolov8n.pt")
+    parser.add_argument(
+        "--yolo-model",
+        default="",
+        help="Legacy single-model mode. Leave empty to use split person/vehicle models.",
+    )
     parser.add_argument("--yolo-conf-threshold", type=float, default=0.25)
+    parser.add_argument("--person-model", default=str(PROJECT_ROOT / "models" / "yolov8n.pt"))
+    parser.add_argument("--vehicle-model", default=str(PROJECT_ROOT / "models" / "vehicle_best.pt"))
+    parser.add_argument("--person-conf-threshold", type=float, default=0.25)
+    parser.add_argument("--vehicle-conf-threshold", type=float, default=0.25)
+    parser.add_argument(
+        "--device",
+        default="auto",
+        help="Inference device: auto|cpu|0. auto uses CUDA GPU when available.",
+    )
     parser.add_argument("--window-name", default="Head + Vehicle Visualizer")
     parser.add_argument("--no-show", action="store_true")
     parser.add_argument("--out-jsonl", default="")
@@ -141,13 +154,24 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     width, height, zones = load_zones(args.zones)
-    detector = YoloV8HeadVehicleDetector(
-        model_name=args.yolo_model,
-        conf_threshold=args.yolo_conf_threshold,
-        include_person=True,
-        include_vehicle=True,
-        include_head_proxy=True,
-    )
+    if args.yolo_model:
+        detector = YoloV8HeadVehicleDetector(
+            model_name=args.yolo_model,
+            conf_threshold=args.yolo_conf_threshold,
+            include_person=True,
+            include_vehicle=True,
+            include_head_proxy=True,
+            device=args.device,
+        )
+    else:
+        detector = YoloV8SplitHeadVehicleDetector(
+            person_model_name=args.person_model,
+            vehicle_model_name=args.vehicle_model,
+            person_conf_threshold=args.person_conf_threshold,
+            vehicle_conf_threshold=args.vehicle_conf_threshold,
+            include_head_proxy=True,
+            device=args.device,
+        )
     if not args.no_show:
         cv2.namedWindow(args.window_name, cv2.WINDOW_NORMAL)
 
