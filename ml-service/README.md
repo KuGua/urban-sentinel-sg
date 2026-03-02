@@ -543,12 +543,40 @@ python infer/visualize_head_vehicle_video.py \
   --out-video artifacts/infer/head_vehicle_visual.mp4
 ```
 
+LWCC crowd backend (head marking + people count + density map count):
+
+```bash
+python infer/infer_head_vehicle_video.py \
+  --video /path/to/video.mp4 \
+  --zones zones_analysis.json \
+  --crowd-backend lwcc \
+  --lwcc-module lwcc \
+  --lwcc-model /path/to/lwcc_checkpoint.pt \
+  --fps 3 \
+  --out artifacts/infer/head_vehicle_lwcc.jsonl
+```
+
+LWCC + YOLO vehicle hybrid:
+
+```bash
+python infer/visualize_head_vehicle_video.py \
+  --video /path/to/video.mp4 \
+  --zones zones_analysis.json \
+  --crowd-backend hybrid \
+  --lwcc-module lwcc \
+  --lwcc-model /path/to/lwcc_checkpoint.pt \
+  --vehicle-model models/vehicle_best.pt \
+  --out-video artifacts/infer/head_vehicle_hybrid.mp4
+```
+
 Notes:
 - Split-model mode is now the default for head/vehicle scripts (`person-model` + `vehicle-model`).
 - `--device auto` uses CUDA GPU when available, otherwise CPU.
 - To use legacy single-model mode, pass `--yolo-model yolov8n.pt`.
 - Vehicle classes use COCO IDs: bicycle, car, motorcycle, bus, truck.
 - Head boxes are generated as a stable proxy from the top region of each detected person box.
+- `--crowd-backend lwcc` uses LWCC for crowd/head and outputs `lwcc` metadata in JSONL.
+- `--crowd-backend hybrid` uses LWCC for people/head and YOLO for vehicles.
 
 ## Fine-tune Vehicle Model from Singapore Traffic Camera API
 
