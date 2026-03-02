@@ -550,6 +550,25 @@ Notes:
 - Vehicle classes use COCO IDs: bicycle, car, motorcycle, bus, truck.
 - Head boxes are generated as a stable proxy from the top region of each detected person box.
 
+## Accident Detection (External YOLO Model)
+
+Use this to run an accident-specific YOLO model and overlay per-window accident probability on video.
+
+```bash
+python infer/visualize_accident_yolo_video.py \
+  --video /path/to/video.mp4 \
+  --model models/accident_yolov8_best.pt \
+  --out-video artifacts/infer/accident_yolo_demo.mp4 \
+  --out-jsonl artifacts/infer/accident_yolo_demo.jsonl \
+  --max-seconds 60 \
+  --window-sec 2 \
+  --device auto
+```
+
+Notes:
+- `--device auto` uses CUDA GPU when available.
+- JSONL output contains one record per time window with `accidentProb` and `isCrashCandidate`.
+
 Fallback behavior if model artifacts are missing:
 - Uses pressure/turbulence/entropy fallback scorer:
   - `pressure = density * (speed_mean + 0.5 * turbulence)`
