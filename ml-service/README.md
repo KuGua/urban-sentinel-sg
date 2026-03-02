@@ -550,6 +550,29 @@ Notes:
 - Vehicle classes use COCO IDs: bicycle, car, motorcycle, bus, truck.
 - Head boxes are generated as a stable proxy from the top region of each detected person box.
 
+## Fine-tune Vehicle Model from Singapore Traffic Camera API
+
+This pipeline collects traffic camera snapshots from Singapore API, auto-labels vehicles, builds YOLO dataset, and fine-tunes the vehicle model.
+
+```bash
+python train/finetune_vehicle_from_sg_traffic_api.py \
+  --api-url https://api.data.gov.sg/v1/transport/traffic-images \
+  --duration-min 30 \
+  --interval-sec 20 \
+  --seed-model models/vehicle_best.pt \
+  --out-root data/sg_traffic_vehicle \
+  --epochs 20 \
+  --imgsz 960 \
+  --batch 8 \
+  --device auto
+```
+
+Notes:
+- `--device auto` uses CUDA GPU when available.
+- For LTA DataMall/private endpoints, pass `--account-key` (or set `SG_ROADCAM_API_KEY`).
+- If your API endpoint is different, pass the exact URL via `--api-url`.
+- Output dataset and summary are written under `data/sg_traffic_vehicle/`.
+
 ## Accident Detection (External YOLO Model)
 
 Use this to run an accident-specific YOLO model and overlay per-window accident probability on video.
