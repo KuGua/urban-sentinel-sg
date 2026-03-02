@@ -3,3 +3,13 @@ backend/node_modules
 frontend/node_modules
 dist
 .env
+
+# ML generated artifacts
+ml-service/runs/
+ml-service/*.pt
+ml-service/data/*
+!ml-service/data/.gitkeep
+ml-service/models/*
+!ml-service/models/.gitkeep
+!ml-service/models/vehicle_best.pt
+!ml-service/models/vehicle_best.meta.json
