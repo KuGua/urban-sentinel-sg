@@ -2,7 +2,6 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors, SafeFlowPalette } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -34,14 +33,6 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="location.fill.viewfinder" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="onemap"
-        options={{
-          title: 'OneMap',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="map.fill" color={color} />,
         }}
       />
     </Tabs>

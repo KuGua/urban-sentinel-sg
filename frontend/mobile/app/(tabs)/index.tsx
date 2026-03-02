@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
+import * as Location from "expo-location";
 import {
   Animated,
   Modal,
@@ -16,7 +16,70 @@ import { useSafeFlow } from "@/lib/safeflow-provider";
 
 const HOLD_MS = 2000;
 const PRE_SEND_COUNTDOWN_SEC = 5;
-const ONEMAP_EMBED_URL = "https://www.onemap.gov.sg/maps/?lat=1.3521&lng=103.8198&zoom=11";
+const DEFAULT_CENTER = { lat: 1.3521, lng: 103.8198 };
+const DEFAULT_ZOOM = 11;
+const GPS_ZOOM = 16;
+
+function buildOneMapTilesHtml(lat: number, lng: number, zoom: number) {
+  const safeLat = Number.isFinite(lat) ? lat : DEFAULT_CENTER.lat;
+  const safeLng = Number.isFinite(lng) ? lng : DEFAULT_CENTER.lng;
+  const safeZoom = Number.isFinite(zoom) ? zoom : DEFAULT_ZOOM;
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      html, body, #map { margin: 0; width: 100%; height: 100%; background: #12344f; }
+      .map-status {
+        position: absolute;
+        z-index: 999;
+        left: 8px;
+        top: 8px;
+        background: rgba(15,43,70,0.85);
+        color: #dff2ff;
+        border: 1px solid rgba(121,187,207,0.5);
+        border-radius: 8px;
+        padding: 6px 8px;
+        font: 12px/1.35 -apple-system, Segoe UI, Roboto, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="status" class="map-status">Loading OneMap tiles...</div>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      (function () {
+        const statusEl = document.getElementById("status");
+        const map = L.map("map", {
+          center: [${safeLat.toFixed(6)}, ${safeLng.toFixed(6)}],
+          zoom: ${safeZoom.toFixed(2)},
+          minZoom: 11,
+          maxZoom: 20,
+          zoomSnap: 0.25
+        });
+        L.tileLayer("https://www.onemap.gov.sg/maps/tiles/Default_HD/{z}/{x}/{y}.png", {
+          attribution: "Map data (c) OpenStreetMap contributors, OneMap, Singapore Land Authority",
+          maxNativeZoom: 20,
+          maxZoom: 20
+        }).addTo(map);
+        statusEl.textContent = "OneMap tiles ready.";
+      })();
+    </script>
+  </body>
+</html>`;
+}
 
 function modeBackgroundColor(mode: "normal" | "alert" | "evacuation") {
   void mode;
@@ -79,6 +142,9 @@ export default function HomeScreen() {
   } = useSafeFlow();
 
   const [mapStatus, setMapStatus] = useState("loading");
+  const [locationStatus, setLocationStatus] = useState("Locating via GPS...");
+  const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
+  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -98,6 +164,14 @@ export default function HomeScreen() {
   const sectionFooter = useRef(new Animated.Value(0)).current;
   const [backgroundBaseColor, setBackgroundBaseColor] = useState(modeBackgroundColor(globalMode));
   const [backgroundNextColor, setBackgroundNextColor] = useState(modeBackgroundColor(globalMode));
+  const onemapTilesHtml = useMemo(
+    () => buildOneMapTilesHtml(mapCenter.lat, mapCenter.lng, mapZoom),
+    [mapCenter, mapZoom]
+  );
+  const mapRenderKey = useMemo(
+    () => `${mapCenter.lat.toFixed(5)}-${mapCenter.lng.toFixed(5)}-${mapZoom.toFixed(2)}`,
+    [mapCenter, mapZoom]
+  );
 
   const riskSummary = useMemo(() => {
     const zones = lastRiskMap?.routingZones ?? [];
@@ -231,6 +305,47 @@ export default function HomeScreen() {
   }, [countdown, triggerEmergencyMode]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const locateUser = async () => {
+      try {
+        const permission = await Location.requestForegroundPermissionsAsync();
+        if (cancelled) return;
+        if (permission.status !== "granted") {
+          setLocationStatus("GPS permission denied. Showing default Singapore view.");
+          return;
+        }
+
+        const pos = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        if (cancelled) return;
+
+        const lat = Number(pos.coords.latitude);
+        const lng = Number(pos.coords.longitude);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          setMapCenter({ lat, lng });
+          setMapZoom(GPS_ZOOM);
+          setMapStatus("loading");
+          setLocationStatus(`GPS locked at ${lat.toFixed(5)}, ${lng.toFixed(5)}.`);
+        } else {
+          setLocationStatus("GPS unavailable. Showing default Singapore view.");
+        }
+      } catch {
+        if (!cancelled) {
+          setLocationStatus("GPS unavailable. Showing default Singapore view.");
+        }
+      }
+    };
+
+    void locateUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (holdTimerRef.current) clearInterval(holdTimerRef.current);
       if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
@@ -277,8 +392,9 @@ export default function HomeScreen() {
             <View style={styles.mapWrap}>
               {Platform.OS === "web" ? (
                 <iframe
+                  key={mapRenderKey}
                   title="OneMap Singapore"
-                  src={ONEMAP_EMBED_URL}
+                  srcDoc={onemapTilesHtml}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   allowFullScreen
@@ -290,7 +406,8 @@ export default function HomeScreen() {
                   const NativeWebView = require("react-native-webview").WebView as React.ComponentType<any>;
                   return (
                     <NativeWebView
-                      source={{ uri: ONEMAP_EMBED_URL }}
+                      key={mapRenderKey}
+                      source={{ html: onemapTilesHtml, baseUrl: "https://www.onemap.gov.sg" }}
                       style={styles.mapWebView}
                       onLoadStart={() => setMapStatus("loading")}
                       onLoadEnd={() => setMapStatus("ready")}
@@ -309,6 +426,7 @@ export default function HomeScreen() {
             </View>
             <View style={styles.locationRow}>
               <Text style={styles.locationText}>Map: {mapStatus}</Text>
+              <Text style={styles.locationText}>{locationStatus}</Text>
             </View>
           </View>
         </AnimatedCard>
@@ -369,7 +487,7 @@ export default function HomeScreen() {
                 onPressIn={onEmergencyPressIn}
                 onPressOut={onEmergencyPressOut}
                 style={styles.emergencyButton}>
-                <Ionicons name="notifications" size={72} color="#FFFFFF" />
+                <Text style={styles.emergencyIconText}>SOS</Text>
               </Pressable>
               <Text selectable={false} style={styles.emergencyCaption}>
                 {isHolding ? `holding ${Math.round(holdProgress * 100)}%` : "emergency button"}
@@ -618,6 +736,12 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 7 },
     elevation: 5,
+  },
+  emergencyIconText: {
+    color: "#FFFFFF",
+    fontSize: 40,
+    fontWeight: "900",
+    letterSpacing: 1.2,
   },
   emergencyCaption: {
     marginTop: 10,
