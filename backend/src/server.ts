@@ -21,9 +21,17 @@ import { WebSocketPublisher } from "../events/WebSocketPublisher";
 import mapData from "../data/map.json";
 import CONFIG from "./config";
 import { buildMockCrowdHeatSnapshot } from "./mock/crowdHeat";
+import {
+  deleteSession,
+  filterPlanningAreaRowsByScope,
+  getProfileByToken,
+  initAccessControlDb,
+  loginWithPassword,
+} from "./accessControl";
 
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 dotenv.config();
+initAccessControlDb();
 
 /* =====================================================
    App + Server
@@ -38,6 +46,22 @@ const io = new Server(server, {
 
 app.use(express.json());
 app.use(cors());
+
+function extractBearerToken(headerValue: string | undefined): string {
+  const raw = String(headerValue || "").trim();
+  if (!raw.toLowerCase().startsWith("bearer ")) {
+    return "";
+  }
+  return raw.slice(7).trim();
+}
+
+function readAuthProfileFromRequest(req: express.Request) {
+  const token = extractBearerToken(req.headers.authorization);
+  if (!token) return null;
+  const profile = getProfileByToken(token);
+  if (!profile) return null;
+  return { token, profile };
+}
 
 const ML_SERVICE_BASE_URL = (process.env.ML_SERVICE_BASE_URL || "http://127.0.0.1:8099").replace(/\/+$/, "");
 const TRAFFIC_ML_ENDPOINT = `${ML_SERVICE_BASE_URL}/infer/traffic-camera`;
@@ -259,6 +283,46 @@ app.get("/health", (_, res) => {
   res.json({ status: "ok" });
 });
 
+app.post("/auth/login", (req, res) => {
+  const username = String(req.body?.username || "").trim();
+  const password = String(req.body?.password || "");
+  if (!username || !password) {
+    res.status(400).json({ error: "username and password are required" });
+    return;
+  }
+
+  const session = loginWithPassword(username, password);
+  if (!session) {
+    res.status(401).json({ error: "Invalid username or password" });
+    return;
+  }
+
+  res.json({
+    ok: true,
+    token: session.token,
+    profile: session.profile,
+  });
+});
+
+app.get("/auth/me", (req, res) => {
+  const auth = readAuthProfileFromRequest(req);
+  if (!auth) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  res.json({ ok: true, profile: auth.profile });
+});
+
+app.post("/auth/logout", (req, res) => {
+  const token = extractBearerToken(req.headers.authorization);
+  if (!token) {
+    res.status(400).json({ error: "Bearer token is required" });
+    return;
+  }
+  deleteSession(token);
+  res.json({ ok: true });
+});
+
 // Manual route testing
 app.post("/route", (req, res) => {
 
@@ -433,11 +497,24 @@ app.get("/onemap/search", async (req, res) => {
 
 app.get("/onemap/planning-areas", async (req, res) => {
   try {
+    const auth = readAuthProfileFromRequest(req);
+    if (!auth) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
     const year = String(req.query.year ?? "2019").trim();
-    const data = await fetchOneMapJson<unknown>(
+    const data = await fetchOneMapJson<{ SearchResults?: Array<Record<string, unknown>> }>(
       `https://www.onemap.gov.sg/api/public/popapi/getAllPlanningarea?year=${encodeURIComponent(year)}`
     );
-    res.json(data);
+    const rows = Array.isArray(data?.SearchResults) ? data.SearchResults : [];
+    const filteredRows = filterPlanningAreaRowsByScope(rows, auth.profile.scope);
+
+    res.json({
+      ...data,
+      SearchResults: filteredRows,
+      _scope: auth.profile.scope,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown OneMap error";
     res.status(502).json({ error: message });

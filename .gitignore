@@ -62,3 +62,9 @@ ml-service/data/**/*.avi
 ml-service/data/**/*.mov
 ml-service/data/**/*.mkv
 ml-service/data/**/*.m4v
+
+# Local SQLite runtime databases
+backend/data/*.sqlite
+backend/data/*.sqlite-shm
+backend/data/*.sqlite-wal
+backend/data/access-control.runtime.json

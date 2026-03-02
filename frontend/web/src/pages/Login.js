@@ -2,20 +2,47 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WebSocketClient } from '../api/websocket';
 
+const BACKEND_BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
+
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) return;
 
-    localStorage.setItem('staffAuth', 'true');
+    setError('');
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      if (!response.ok) {
+        let detail = `Login failed (${response.status})`;
+        try {
+          const json = await response.json();
+          if (json?.error) detail = String(json.error);
+        } catch {
+          // ignore response parse failures
+        }
+        throw new Error(detail);
+      }
 
-    const ws = new WebSocketClient();
-    ws.connect();
+      const data = await response.json();
+      localStorage.setItem('staffAuth', 'true');
+      localStorage.setItem('staffAuthToken', String(data?.token || ''));
+      localStorage.setItem('staffProfile', JSON.stringify(data?.profile || {}));
 
-    navigate('/staff');
+      const ws = new WebSocketClient();
+      ws.connect();
+
+      navigate('/staff');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Login failed');
+    }
   };
 
   return (
@@ -65,6 +92,7 @@ export default function Login() {
               Sign In
             </button>
           </div>
+          {error ? <p style={{ color: '#b91c1c', fontSize: 13 }}>{error}</p> : null}
         </form>
       </div>
     </div>

@@ -29,6 +29,16 @@ const CAMERA_REGIONS = [
   { key: 'south', label: 'South', center: [1.2746, 103.814], zoom: 14 }
 ];
 
+function readStoredProfile() {
+  try {
+    const raw = localStorage.getItem('staffProfile');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
@@ -218,6 +228,22 @@ function getPathCenter(path) {
   return [latSum / path.length, lngSum / path.length];
 }
 
+function isPointInsidePolygon(point, polygon) {
+  if (!Array.isArray(point) || !Array.isArray(polygon) || polygon.length < 3) return false;
+  const y = point[0];
+  const x = point[1];
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const yi = Number(polygon[i][0]);
+    const xi = Number(polygon[i][1]);
+    const yj = Number(polygon[j][0]);
+    const xj = Number(polygon[j][1]);
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / ((yj - yi) || Number.EPSILON) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
 function crowdColor(score) {
   if (score >= 0.85) return '#7f1d1d';
   if (score >= 0.7) return '#b91c1c';
@@ -321,6 +347,8 @@ function buildTrafficPopupHtml(camera) {
 }
 
 export default function StaffHome() {
+  const [profile] = useState(() => readStoredProfile());
+  const [authToken] = useState(() => localStorage.getItem('staffAuthToken') || '');
   const [, setPoiStatus] = useState('Loading police, fire and hospital markers...');
   const [, setAdminStatus] = useState('Loading planning area boundaries...');
   const [, setCrowdStatus] = useState(
@@ -350,6 +378,7 @@ export default function StaffHome() {
   const dispatchModeRef = useRef(false);
   const trafficCameraMarkersRef = useRef(new Map());
   const trafficCamerasRef = useRef([]);
+  const planningAreaPathsRef = useRef([]);
 
   const setDebugMessage = (key, message) => {
     setDebugMessages((prev) => {
@@ -363,16 +392,34 @@ export default function StaffHome() {
     });
   };
 
+  const hasGlobalScope = Boolean(profile?.scope?.isGlobal);
+  const scopedAreas = Array.isArray(profile?.scope?.planningAreas) ? profile.scope.planningAreas : [];
+
+  const isPointInScope = (lat, lng) => {
+    if (hasGlobalScope) return true;
+    const point = [Number(lat), Number(lng)];
+    if (!Number.isFinite(point[0]) || !Number.isFinite(point[1])) return false;
+    const polygons = planningAreaPathsRef.current;
+    if (!Array.isArray(polygons) || polygons.length === 0) return false;
+    return polygons.some((path) => isPointInsidePolygon(point, path));
+  };
+
   useEffect(() => {
     dispatchModeRef.current = dispatchMode;
   }, [dispatchMode]);
 
   const syncVisibleTrafficCameras = (map) => {
-    if (!map) return;
-    setMapZoom(map.getZoom());
-    const bounds = map.getBounds();
-    const visible = trafficCamerasRef.current.filter((camera) => bounds.contains([camera.lat, camera.lng]));
-    setVisibleTrafficCameras(visible);
+    if (!map || mapRef.current !== map) return;
+    const pane = typeof map.getPane === 'function' ? map.getPane('mapPane') : null;
+    if (!pane) return;
+    try {
+      setMapZoom(map.getZoom());
+      const bounds = map.getBounds();
+      const visible = trafficCamerasRef.current.filter((camera) => bounds.contains([camera.lat, camera.lng]));
+      setVisibleTrafficCameras(visible);
+    } catch {
+      // Leaflet map can be disposed while async tasks are still finishing.
+    }
   };
 
   const focusTrafficCamera = (cameraId) => {
@@ -385,7 +432,7 @@ export default function StaffHome() {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('staffAuth')) {
+    if (!localStorage.getItem('staffAuth') || !authToken || !profile) {
       window.location.href = '/';
       return;
     }
@@ -398,7 +445,7 @@ export default function StaffHome() {
     return () => {
       ws.disconnect();
     };
-  }, []);
+  }, [authToken, profile]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -452,6 +499,7 @@ export default function StaffHome() {
     if (mapRef.current || !mapContainerRef.current) {
       return;
     }
+    let isDisposed = false;
 
     const singaporeCenter = [1.3521, 103.8198];
     const map = L.map(mapContainerRef.current, {
@@ -503,8 +551,16 @@ export default function StaffHome() {
     const getAddress = (record) => record.ADDRESS || record.ROAD_NAME || '';
 
     const fetchBackendJson = async (url) => {
-      const response = await fetch(url);
+      const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+      const response = await fetch(url, { headers });
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('staffAuth');
+          localStorage.removeItem('staffAuthToken');
+          localStorage.removeItem('staffProfile');
+          window.location.href = '/';
+          throw new Error('Unauthorized');
+        }
         let detail = '';
         try {
           const json = await response.json();
@@ -731,6 +787,9 @@ export default function StaffHome() {
           if (!Number.isFinite(lat) || !Number.isFinite(lng) || !finalImageUrl) {
             continue;
           }
+          if (!isPointInScope(lat, lng)) {
+            continue;
+          }
 
           const marker = L.marker([lat, lng], {
             icon: buildTrafficCameraIcon(),
@@ -788,6 +847,7 @@ export default function StaffHome() {
           const lng = Number(user?.lng);
           const ts = Number(user?.ts);
           if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+          if (!isPointInScope(lat, lng)) continue;
 
           const latCell = Math.round(lat / metersToLat(gridSizeM));
           const lngCell = Math.round(lng / metersToLng(gridSizeM, lat));
@@ -849,12 +909,14 @@ export default function StaffHome() {
           `${BACKEND_BASE_URL}/onemap/planning-areas?year=${encodeURIComponent(PLANNING_AREA_YEAR)}`
         );
         let drawn = 0;
+        const areaPaths = [];
         const rows = Array.isArray(data?.SearchResults) ? data.SearchResults : [];
         for (const row of rows) {
           const paths = extractPathsFromRecord(row);
           const areaName = row?.pln_area_n || 'Planning Area';
 
           for (const path of paths) {
+            areaPaths.push(path);
             L.polygon(path, {
               color: '#367098',
               weight: 2,
@@ -873,16 +935,29 @@ export default function StaffHome() {
             drawn += 1;
           }
         }
+        planningAreaPathsRef.current = areaPaths;
+
+        if (!hasGlobalScope && areaPaths.length > 0) {
+          const bounds = L.latLngBounds([]);
+          for (const path of areaPaths) {
+            for (const point of path) {
+              bounds.extend(point);
+            }
+          }
+          if (bounds.isValid()) {
+            map.fitBounds(bounds.pad(0.2), { maxZoom: 13 });
+          }
+        }
 
         if (ENABLE_MOCK_CROWD_HEAT) {
           drawCrowdAreaLayer();
           toggleCrowdViewByZoom();
         }
-        setAdminStatus(
-          drawn > 0
-            ? `Planning area boundaries loaded (${drawn} polygons, year ${PLANNING_AREA_YEAR}).`
-            : `Planning area API returned no polygon geometry (year ${PLANNING_AREA_YEAR}).`
-        );
+          setAdminStatus(
+            drawn > 0
+              ? `Planning area boundaries loaded (${drawn} polygons, year ${PLANNING_AREA_YEAR}).`
+              : `Planning area API returned no polygon geometry (year ${PLANNING_AREA_YEAR}).`
+          );
         setDebugMessage('admin', null);
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
@@ -897,6 +972,7 @@ export default function StaffHome() {
     map.on('zoomend', syncViewportTraffic);
     map.on('moveend', syncViewportTraffic);
     map.on('click', (event) => {
+      if (isDisposed) return;
       if (!dispatchModeRef.current) {
         return;
       }
@@ -935,18 +1011,26 @@ export default function StaffHome() {
       setDispatchStatus(`Pin set at (${lat.toFixed(5)}, ${lng.toFixed(5)}).`);
     });
     toggleCrowdViewByZoom();
-
-    loadPoiMarkers();
-    loadAdministrativeBoundaries();
-    loadCrowdHeat();
-    loadTrafficCameras();
-    loadUserPresence();
-    syncVisibleTrafficCameras(map);
-    const trafficIntervalId = window.setInterval(loadTrafficCameras, TRAFFIC_REFRESH_MS);
-    const presenceIntervalId = window.setInterval(loadUserPresence, PRESENCE_REFRESH_MS);
     mapRef.current = map;
 
+    const bootstrap = async () => {
+      if (isDisposed) return;
+      loadPoiMarkers();
+      await loadAdministrativeBoundaries();
+      if (isDisposed) return;
+      loadCrowdHeat();
+      await loadTrafficCameras();
+      if (isDisposed) return;
+      await loadUserPresence();
+      if (isDisposed) return;
+      syncVisibleTrafficCameras(map);
+    };
+    bootstrap();
+    const trafficIntervalId = window.setInterval(loadTrafficCameras, TRAFFIC_REFRESH_MS);
+    const presenceIntervalId = window.setInterval(loadUserPresence, PRESENCE_REFRESH_MS);
+
     return () => {
+      isDisposed = true;
       window.clearInterval(trafficIntervalId);
       window.clearInterval(presenceIntervalId);
       map.off('zoomend', syncViewportTraffic);
@@ -988,7 +1072,10 @@ export default function StaffHome() {
     try {
       const response = await fetch(buildBackendUrl(DISPATCH_ENDPOINT), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
+        },
         body: JSON.stringify(payload)
       });
 
@@ -1016,6 +1103,10 @@ export default function StaffHome() {
       <header className="staff-header">
         <div className="staff-header-inner">
           <h1 className="staff-title">Staff Center</h1>
+          <p className="status-text" style={{ marginTop: 6 }}>
+            {profile?.displayName || 'Unknown'} | {profile?.departmentName || 'Unknown Department'} |{' '}
+            {hasGlobalScope ? 'Global Scope' : `Scoped: ${scopedAreas.join(', ') || 'N/A'}`}
+          </p>
         </div>
       </header>
 
